@@ -13,9 +13,12 @@ export default class InputManager {
         this.touchX = 0;
         this.touchY = 0;
 
-        window.addEventListener("keydown", (event) => {
+        // =====================
+        // キーボード
+        // =====================
+        window.addEventListener("keydown", (e) => {
 
-            switch (event.key) {
+            switch (e.key) {
 
                 case "ArrowLeft":
                 case "a":
@@ -40,14 +43,12 @@ export default class InputManager {
                 case "S":
                     this.down = true;
                     break;
-
             }
-
         });
 
-        window.addEventListener("keyup", (event) => {
+        window.addEventListener("keyup", (e) => {
 
-            switch (event.key) {
+            switch (e.key) {
 
                 case "ArrowLeft":
                 case "a":
@@ -72,24 +73,29 @@ export default class InputManager {
                 case "S":
                     this.down = false;
                     break;
-
             }
-
         });
 
+        // =====================
+        // スマホ入力（安定版）
+        // =====================
+
         canvas.addEventListener("touchstart", (e) => {
+
+            e.preventDefault();
 
             const rect = canvas.getBoundingClientRect();
             const touch = e.touches[0];
 
             this.touchActive = true;
-
             this.touchX = touch.clientX - rect.left;
             this.touchY = touch.clientY - rect.top;
 
         }, { passive: false });
 
         canvas.addEventListener("touchmove", (e) => {
+
+            e.preventDefault();
 
             const rect = canvas.getBoundingClientRect();
             const touch = e.touches[0];
@@ -102,9 +108,6 @@ export default class InputManager {
         canvas.addEventListener("touchend", () => {
 
             this.touchActive = false;
-
         });
-
     }
-
 }
