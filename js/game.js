@@ -18,7 +18,7 @@ class Game {
 
         this.resizeCanvas();
 
-        this.input = new InputManager();
+        this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
         this.lastTime = 0;
@@ -83,12 +83,43 @@ class Game {
 
         this.player.update(delta);
 
+        if (this.input.touchActive) {
+
+            this.player.x =
+                this.input.touchX - this.player.width / 2;
+
+            this.player.y =
+                this.input.touchY - this.player.height / 2;
+
+            this.player.x = Math.max(
+                0,
+                Math.min(
+                    this.player.x,
+                    this.canvas.width - this.player.width
+                )
+            );
+
+            this.player.y = Math.max(
+                0,
+                Math.min(
+                    this.player.y,
+                    this.canvas.height - this.player.height
+                )
+            );
+
+        }
+
     }
 
     render() {
 
         this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillRect(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
 
         this.player.draw(this.ctx);
 
