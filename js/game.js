@@ -1,6 +1,7 @@
 import InputManager from "./core/inputManager.js";
 import Player from "./entities/player.js";
 import Bullet from "./entities/bullet.js";
+import Enemy from "./entities/enemy.js";
 
 class Game {
 
@@ -23,9 +24,14 @@ class Game {
         this.player = new Player(this.canvas, this.input);
 
         this.bullets = [];
+        this.enemies = [];
 
         this.shootTimer = 0;
         this.shootInterval = 0.25;
+
+        // 👾 敵生成タイマー
+        this.enemyTimer = 0;
+        this.enemyInterval = 1.2;
 
         this.lastTime = 0;
         this.running = false;
@@ -83,25 +89,7 @@ class Game {
         this.player.update(delta);
 
         // =========================
-        // スマホ操作（ブースター基準）
-        // =========================
-        if (this.input.touchActive) {
-
-            const targetX =
-                this.input.touchX - this.player.width / 2;
-
-            const targetY =
-                this.input.touchY - (this.player.height - this.player.boosterOffset);
-
-            this.player.x += (targetX - this.player.x) * 0.18;
-            this.player.y += (targetY - this.player.y) * 0.18;
-
-            this.player.x = Math.max(0, Math.min(this.player.x, this.canvas.width - this.player.width));
-            this.player.y = Math.max(0, Math.min(this.player.y, this.canvas.height - this.player.height));
-        }
-
-        // =========================
-        // オートショット
+        // 🔫 弾
         // =========================
         this.shootTimer += delta;
 
@@ -117,8 +105,31 @@ class Game {
             );
         }
 
+        // =========================
+        // 👾 敵生成
+        // =========================
+        this.enemyTimer += delta;
+
+        if (this.enemyTimer >= this.enemyInterval) {
+
+            this.enemyTimer = 0;
+
+            const x = Math.random() * (this.canvas.width - 40);
+
+            this.enemies.push(
+                new Enemy(x, -40)
+            );
+        }
+
+        // =========================
+        // 更新処理
+        // =========================
+
         this.bullets.forEach(b => b.update(delta));
+        this.enemies.forEach(e => e.update(delta));
+
         this.bullets = this.bullets.filter(b => b.alive);
+        this.enemies = this.enemies.filter(e => e.alive);
     }
 
     render() {
@@ -129,6 +140,7 @@ class Game {
         this.player.draw(this.ctx);
 
         this.bullets.forEach(b => b.draw(this.ctx));
+        this.enemies.forEach(e => e.draw(this.ctx));
     }
 
     backToTitle() {
