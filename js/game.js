@@ -15,6 +15,8 @@ class Game {
         this.retryButton = document.getElementById("retryButton");
         this.titleButton = document.getElementById("titleButton");
 
+        this.scoreElement = document.getElementById("score");
+
         this.canvas = document.getElementById("gameCanvas");
         this.ctx = this.canvas.getContext("2d");
 
@@ -29,13 +31,13 @@ class Game {
         this.shootTimer = 0;
         this.shootInterval = 0.25;
 
-        // 👾 敵生成タイマー
         this.enemyTimer = 0;
         this.enemyInterval = 1.2;
 
+        this.score = 0;
+
         this.lastTime = 0;
         this.running = false;
-        this.elapsedTime = 0;
 
         this.startButton.addEventListener("click", () => this.start());
         this.retryButton.addEventListener("click", () => this.start());
@@ -45,11 +47,13 @@ class Game {
     }
 
     onResize() {
+
         this.resizeCanvas();
         this.player.resetPosition();
     }
 
     resizeCanvas() {
+
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
@@ -64,7 +68,6 @@ class Game {
 
         this.running = true;
         this.lastTime = performance.now();
-        this.elapsedTime = 0;
 
         requestAnimationFrame((t) => this.loop(t));
     }
@@ -76,8 +79,6 @@ class Game {
         const delta = (time - this.lastTime) / 1000;
         this.lastTime = time;
 
-        this.elapsedTime += delta;
-
         this.update(delta);
         this.render();
 
@@ -88,9 +89,9 @@ class Game {
 
         this.player.update(delta);
 
-        // =========================
+        // =====================
         // 🔫 弾
-        // =========================
+        // =====================
         this.shootTimer += delta;
 
         if (this.shootTimer >= this.shootInterval) {
@@ -105,9 +106,9 @@ class Game {
             );
         }
 
-        // =========================
+        // =====================
         // 👾 敵生成
-        // =========================
+        // =====================
         this.enemyTimer += delta;
 
         if (this.enemyTimer >= this.enemyInterval) {
@@ -121,15 +122,39 @@ class Game {
             );
         }
 
-        // =========================
-        // 更新処理
-        // =========================
-
+        // =====================
+        // 更新
+        // =====================
         this.bullets.forEach(b => b.update(delta));
         this.enemies.forEach(e => e.update(delta));
 
         this.bullets = this.bullets.filter(b => b.alive);
         this.enemies = this.enemies.filter(e => e.alive);
+
+        // =====================
+        // 💥 当たり判定
+        // =====================
+        for (let i = this.enemies.length - 1; i >= 0; i--) {
+
+            const enemy = this.enemies[i];
+
+            for (let j = this.bullets.length - 1; j >= 0; j--) {
+
+                const bullet = this.bullets[j];
+
+                if (this.isHit(enemy, bullet)) {
+
+                    enemy.alive = false;
+                    bullet.alive = false;
+
+                    this.score += 100;
+
+                    break;
+                }
+            }
+        }
+
+        this.scoreElement.textContent = this.score;
     }
 
     render() {
@@ -141,6 +166,16 @@ class Game {
 
         this.bullets.forEach(b => b.draw(this.ctx));
         this.enemies.forEach(e => e.draw(this.ctx));
+    }
+
+    isHit(a, b) {
+
+        return !(
+            a.x > b.x + b.width ||
+            a.x + a.width < b.x ||
+            a.y > b.y + b.height ||
+            a.y + a.height < b.y
+        );
     }
 
     backToTitle() {
