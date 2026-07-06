@@ -1,3 +1,4 @@
+import Player from "./entities/player.js";
 class Game {
 
     constructor() {
