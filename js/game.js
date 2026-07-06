@@ -108,20 +108,29 @@ class Game {
 
     }
 
-    render() {
+    // render() {
 
-        this.ctx.fillStyle = "#000";
+    //     this.ctx.fillStyle = "#000";
 
-        this.ctx.fillRect(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
+    //     this.ctx.fillRect(
+    //         0,
+    //         0,
+    //         this.canvas.width,
+    //         this.canvas.height
+    //     );
 
-        this.player.draw(this.ctx);
+    //     this.player.draw(this.ctx);
 
-    }
+    // }
+render() {
+
+    this.ctx.fillStyle = "#000";
+    this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
+
+    this.ctx.fillStyle = "red";
+    this.ctx.fillRect(100,100,100,100);
+
+}
 
     backToTitle() {
 
