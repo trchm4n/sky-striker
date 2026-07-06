@@ -22,16 +22,19 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
-        // 弾
+        // 弾管理
         this.bullets = [];
 
         // オートショット
         this.shootTimer = 0;
         this.shootInterval = 0.25;
 
-        this.elapsedTime = 0;
+        // スマホ追従用
+        this.touchOffsetY = 0;
+
         this.lastTime = 0;
         this.running = false;
+        this.elapsedTime = 0;
 
         this.startButton.addEventListener("click", () => this.start());
         this.retryButton.addEventListener("click", () => this.start());
@@ -41,13 +44,11 @@ class Game {
     }
 
     onResize() {
-
         this.resizeCanvas();
         this.player.resetPosition();
     }
 
     resizeCanvas() {
-
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
@@ -84,31 +85,42 @@ class Game {
 
     update(delta) {
 
+        // プレイヤー基本更新（キーボードなど）
         this.player.update(delta);
 
         // =========================
-        // スマホ追従（遅延＋オフセット）
+        // スマホ操作（ブースター基準）
         // =========================
         if (this.input.touchActive) {
 
-            const offsetY = 80; // 👈 指より上に出す
+            const targetX =
+                this.input.touchX - this.player.width / 2;
 
-            const targetX = this.input.touchX - this.player.width / 2;
-            const targetY = this.input.touchY - this.player.height / 2 - offsetY;
+            // 🚀 ブースター位置基準（指の上に機体が乗る）
+            const boosterOffset = 10;
 
-            // 追従遅延（ヌルっと動く）
+            const targetY =
+                this.input.touchY - (this.player.height - boosterOffset);
+
+            // ヌル追従
             this.player.x += (targetX - this.player.x) * 0.18;
             this.player.y += (targetY - this.player.y) * 0.18;
 
-            // 画面制限
-            this.player.x = Math.max(0, Math.min(this.player.x, this.canvas.width - this.player.width));
-            this.player.y = Math.max(0, Math.min(this.player.y, this.canvas.height - this.player.height));
+            // 画面外制限
+            this.player.x = Math.max(
+                0,
+                Math.min(this.player.x, this.canvas.width - this.player.width)
+            );
+
+            this.player.y = Math.max(
+                0,
+                Math.min(this.player.y, this.canvas.height - this.player.height)
+            );
         }
 
         // =========================
         // オートショット
         // =========================
-
         this.shootTimer += delta;
 
         if (this.shootTimer >= this.shootInterval) {
@@ -126,8 +138,11 @@ class Game {
         // =========================
         // 弾更新
         // =========================
+        for (let i = 0; i < this.bullets.length; i++) {
+            this.bullets[i].update(delta);
+        }
 
-        this.bullets.forEach(b => b.update(delta));
+        // 画面外弾削除
         this.bullets = this.bullets.filter(b => b.alive);
     }
 
@@ -138,7 +153,9 @@ class Game {
 
         this.player.draw(this.ctx);
 
-        this.bullets.forEach(b => b.draw(this.ctx));
+        for (let i = 0; i < this.bullets.length; i++) {
+            this.bullets[i].draw(this.ctx);
+        }
     }
 
     backToTitle() {
@@ -151,4 +168,6 @@ class Game {
     }
 }
 
-new Game();
+window.onload = () => {
+    new Game();
+};
