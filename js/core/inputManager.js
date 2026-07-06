@@ -77,26 +77,25 @@ export default class InputManager {
 
         });
 
-        canvas.addEventListener("touchstart", (event) => {
+        canvas.addEventListener("touchstart", (e) => {
 
-            event.preventDefault();
-
-            const touch = event.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
 
             this.touchActive = true;
-            this.touchX = touch.clientX;
-            this.touchY = touch.clientY;
+
+            this.touchX = touch.clientX - rect.left;
+            this.touchY = touch.clientY - rect.top;
 
         }, { passive: false });
 
-        canvas.addEventListener("touchmove", (event) => {
+        canvas.addEventListener("touchmove", (e) => {
 
-            event.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
 
-            const touch = event.touches[0];
-
-            this.touchX = touch.clientX;
-            this.touchY = touch.clientY;
+            this.touchX = touch.clientX - rect.left;
+            this.touchY = touch.clientY - rect.top;
 
         }, { passive: false });
 
