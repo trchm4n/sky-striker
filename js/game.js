@@ -21,6 +21,8 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
+        // ⏱️ ゲーム時間管理
+        this.elapsedTime = 0;
         this.lastTime = 0;
         this.running = false;
 
@@ -33,17 +35,13 @@ class Game {
     }
 
     onResize() {
-
         this.resizeCanvas();
         this.player.resetPosition();
-
     }
 
     resizeCanvas() {
-
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
-
     }
 
     start() {
@@ -52,74 +50,61 @@ class Game {
         this.gameOver.classList.add("hidden");
         this.gameContainer.classList.remove("hidden");
 
-        if (this.running) {
-            return;
-        }
+        if (this.running) return;
 
         this.running = true;
         this.lastTime = performance.now();
+        this.elapsedTime = 0;
 
-        requestAnimationFrame((time) => this.loop(time));
-
+        requestAnimationFrame((t) => this.loop(t));
     }
 
     loop(time) {
 
-        if (!this.running) {
-            return;
-        }
+        if (!this.running) return;
 
         const delta = (time - this.lastTime) / 1000;
         this.lastTime = time;
 
+        // ⏱️ 全体時間更新
+        this.elapsedTime += delta;
+
         this.update(delta);
         this.render();
 
-        requestAnimationFrame((time) => this.loop(time));
-
+        requestAnimationFrame((t) => this.loop(t));
     }
 
     update(delta) {
 
+        // =====================
+        // プレイヤー更新
+        // =====================
         this.player.update(delta);
 
-        if (this.input.touchActive) {
+        // =====================
+        // 将来用：ここに全部集約
+        // =====================
+        this.updateGameLogic(delta);
 
-            this.player.x =
-                this.input.touchX - this.player.width / 2;
+    }
 
-            this.player.y =
-                this.input.touchY - this.player.height / 2;
+    updateGameLogic(delta) {
 
-            this.player.x = Math.max(
-                0,
-                Math.min(
-                    this.player.x,
-                    this.canvas.width - this.player.width
-                )
-            );
+        // 🔥 今は空（ここが超重要）
+        // 弾・敵・エフェクト・ステージ管理は全部ここに入る
 
-            this.player.y = Math.max(
-                0,
-                Math.min(
-                    this.player.y,
-                    this.canvas.height - this.player.height
-                )
-            );
-
-        }
+        // 例：
+        // this.bullets.update(delta);
+        // this.enemies.update(delta);
+        // this.spawner.update(delta);
 
     }
 
     render() {
 
         this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.player.draw(this.ctx);
 
