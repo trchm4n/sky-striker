@@ -1,43 +1,40 @@
+import InputManager from "./core/inputManager.js";
 import Player from "./entities/player.js";
 
 class Game {
 
     constructor() {
 
-        // 画面
         this.titleScreen = document.getElementById("titleScreen");
         this.gameContainer = document.getElementById("gameContainer");
         this.gameOver = document.getElementById("gameOver");
 
-        // ボタン
         this.startButton = document.getElementById("startButton");
         this.retryButton = document.getElementById("retryButton");
         this.titleButton = document.getElementById("titleButton");
 
-        // Canvas
         this.canvas = document.getElementById("gameCanvas");
         this.ctx = this.canvas.getContext("2d");
+
+        this.resizeCanvas();
+
+        this.input = new InputManager();
+        this.player = new Player(this.canvas, this.input);
 
         this.lastTime = 0;
         this.running = false;
 
-        this.resizeCanvas();
-
-        // プレイヤー生成
-        this.player = new Player(this.canvas);
-
-        // イベント
         this.startButton.addEventListener("click", () => this.start());
         this.retryButton.addEventListener("click", () => this.start());
         this.titleButton.addEventListener("click", () => this.backToTitle());
 
         window.addEventListener("resize", () => this.onResize());
+
     }
 
     onResize() {
 
         this.resizeCanvas();
-
         this.player.resetPosition();
 
     }
@@ -60,7 +57,6 @@ class Game {
         }
 
         this.running = true;
-
         this.lastTime = performance.now();
 
         requestAnimationFrame((time) => this.loop(time));
@@ -74,14 +70,12 @@ class Game {
         }
 
         const delta = (time - this.lastTime) / 1000;
-
         this.lastTime = time;
 
         this.update(delta);
-
         this.render();
 
-        requestAnimationFrame((t) => this.loop(t));
+        requestAnimationFrame((time) => this.loop(time));
 
     }
 
@@ -93,16 +87,9 @@ class Game {
 
     render() {
 
-        // 背景
         this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(
-            0,
-            0,
-            this.canvas.width,
-            this.canvas.height
-        );
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // プレイヤー
         this.player.draw(this.ctx);
 
     }
