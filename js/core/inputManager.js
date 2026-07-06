@@ -77,7 +77,7 @@ export default class InputManager {
         });
 
         // =====================
-        // スマホ入力（安定版）
+        // スマホ入力（完全版）
         // =====================
 
         canvas.addEventListener("touchstart", (e) => {
@@ -91,6 +91,8 @@ export default class InputManager {
             this.touchX = touch.clientX - rect.left;
             this.touchY = touch.clientY - rect.top;
 
+            this.updateTouchControls();
+
         }, { passive: false });
 
         canvas.addEventListener("touchmove", (e) => {
@@ -103,11 +105,39 @@ export default class InputManager {
             this.touchX = touch.clientX - rect.left;
             this.touchY = touch.clientY - rect.top;
 
+            this.updateTouchControls();
+
         }, { passive: false });
 
         canvas.addEventListener("touchend", () => {
 
             this.touchActive = false;
+
+            this.left = false;
+            this.right = false;
+            this.up = false;
+            this.down = false;
         });
+    }
+
+    // =====================
+    // 🚀 スマホ移動変換ロジック
+    // =====================
+    updateTouchControls() {
+
+        if (!this.touchActive) return;
+
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height * 0.75;
+
+        const dx = this.touchX - centerX;
+        const dy = this.touchY - centerY;
+
+        const threshold = 30;
+
+        this.left = dx < -threshold;
+        this.right = dx > threshold;
+        this.up = dy < -threshold;
+        this.down = dy > threshold;
     }
 }
