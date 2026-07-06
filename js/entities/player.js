@@ -24,27 +24,26 @@ export default class Player {
     }
 
     update(delta) {
-
-        if (this.input.left) {
-            this.x -= Player.SPEED * delta;
+    
+        const speed = 400 * delta;
+    
+        // キーボード
+        if (this.input.left) this.x -= speed;
+        if (this.input.right) this.x += speed;
+        if (this.input.up) this.y -= speed;
+        if (this.input.down) this.y += speed;
+    
+        // スマホ（追加）
+        if (this.input.touchActive) {
+    
+            this.x = this.input.touchX - this.width / 2;
+            this.y = this.input.touchY - this.height / 2;
+    
         }
-
-        if (this.input.right) {
-            this.x += Player.SPEED * delta;
-        }
-
-        if (this.input.up) {
-            this.y -= Player.SPEED * delta;
-        }
-
-        if (this.input.down) {
-            this.y += Player.SPEED * delta;
-        }
-
-        // 画面外へ出ないようにする
+    
+        // 画面制限
         this.x = Math.max(0, Math.min(this.x, this.canvas.width - this.width));
         this.y = Math.max(0, Math.min(this.y, this.canvas.height - this.height));
-
     }
 
     draw(ctx) {
