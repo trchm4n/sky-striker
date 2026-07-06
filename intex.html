@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
-          content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <title>SKY STRIKER</title>
 
@@ -11,6 +11,7 @@
 </head>
 <body>
 
+<!-- タイトル画面 -->
 <div id="titleScreen">
 
     <h1>SKY STRIKER</h1>
@@ -29,7 +30,7 @@
 
         <ul>
             <li>スマホ：ドラッグで移動</li>
-            <li>PC：WASD または 矢印キー</li>
+            <li>PC：矢印キー または WASD</li>
             <li>ショットは自動発射</li>
             <li>敵を倒してハイスコアを目指そう！</li>
         </ul>
@@ -37,12 +38,18 @@
     </div>
 
     <div class="highscore">
+
         HIGH SCORE
-        <span id="highScoreValue">0</span>
+
+        <span id="highScoreValue">
+            0
+        </span>
+
     </div>
 
 </div>
 
+<!-- ゲーム画面 -->
 <div id="gameContainer" class="hidden">
 
     <canvas id="gameCanvas"></canvas>
@@ -68,6 +75,7 @@
 
 </div>
 
+<!-- ゲームオーバー -->
 <div id="gameOver" class="hidden">
 
     <h1>GAME OVER</h1>
