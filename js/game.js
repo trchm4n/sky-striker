@@ -42,10 +42,16 @@ class Game {
         this.score = 0;
 
         // =====================
-        // ❤️ ライフ追加
+        // ❤️ ライフ
         // =====================
         this.life = 3;
         this.alive = true;
+
+        // =====================
+        // 🛡 無敵時間
+        // =====================
+        this.invincible = false;
+        this.invincibleTimer = 0;
 
         this.lastTime = 0;
         this.running = false;
@@ -81,6 +87,9 @@ class Game {
         this.life = 3;
         this.alive = true;
 
+        this.invincible = false;
+        this.invincibleTimer = 0;
+
         this.bullets = [];
         this.enemies = [];
         this.enemyBullets = [];
@@ -108,6 +117,18 @@ class Game {
         if (!this.alive) return;
 
         this.player.update(delta);
+
+        // =====================
+        // 🛡 無敵時間更新
+        // =====================
+        if (this.invincible) {
+
+            this.invincibleTimer -= delta;
+
+            if (this.invincibleTimer <= 0) {
+                this.invincible = false;
+            }
+        }
 
         // =====================
         // プレイヤー弾
@@ -172,7 +193,7 @@ class Game {
         this.enemyBullets = this.enemyBullets.filter(b => b.alive);
 
         // =====================
-        // 💥 弾→敵
+        // 弾→敵
         // =====================
         for (let i = this.enemies.length - 1; i >= 0; i--) {
 
@@ -194,15 +215,17 @@ class Game {
         }
 
         // =====================
-        // 💥 敵 or 敵弾 → プレイヤー
+        // 💥 ダメージ判定（敵・敵弾）
         // =====================
-
         const hitEnemy = this.enemies.some(e => this.isHit(this.player, e));
         const hitBullet = this.enemyBullets.some(b => this.isHit(this.player, b));
 
-        if (hitEnemy || hitBullet) {
+        if (!this.invincible && (hitEnemy || hitBullet)) {
 
             this.takeDamage();
+
+            this.invincible = true;
+            this.invincibleTimer = 3.0; // ← 3秒
         }
 
         this.scoreElement.textContent = this.score;
@@ -214,7 +237,6 @@ class Game {
         this.life--;
 
         if (this.life <= 0) {
-
             this.gameOverTrigger();
         }
     }
@@ -248,7 +270,7 @@ class Game {
             a.x > b.x + b.width ||
             a.x + a.width < b.x ||
             a.y > b.y + b.height ||
-            a.y + a.height < b.y
+            a.y + b.height < b.y
         );
     }
 
