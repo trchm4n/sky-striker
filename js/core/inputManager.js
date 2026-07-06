@@ -1,11 +1,17 @@
 export default class InputManager {
 
-    constructor() {
+    constructor(canvas) {
+
+        this.canvas = canvas;
 
         this.left = false;
         this.right = false;
         this.up = false;
         this.down = false;
+
+        this.touchActive = false;
+        this.touchX = 0;
+        this.touchY = 0;
 
         window.addEventListener("keydown", (event) => {
 
@@ -68,6 +74,35 @@ export default class InputManager {
                     break;
 
             }
+
+        });
+
+        canvas.addEventListener("touchstart", (event) => {
+
+            event.preventDefault();
+
+            const touch = event.touches[0];
+
+            this.touchActive = true;
+            this.touchX = touch.clientX;
+            this.touchY = touch.clientY;
+
+        }, { passive: false });
+
+        canvas.addEventListener("touchmove", (event) => {
+
+            event.preventDefault();
+
+            const touch = event.touches[0];
+
+            this.touchX = touch.clientX;
+            this.touchY = touch.clientY;
+
+        }, { passive: false });
+
+        canvas.addEventListener("touchend", () => {
+
+            this.touchActive = false;
 
         });
 
