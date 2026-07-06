@@ -22,15 +22,10 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
-        // 弾管理
         this.bullets = [];
 
-        // オートショット
         this.shootTimer = 0;
         this.shootInterval = 0.25;
-
-        // スマホ追従用
-        this.touchOffsetY = 0;
 
         this.lastTime = 0;
         this.running = false;
@@ -85,7 +80,6 @@ class Game {
 
     update(delta) {
 
-        // プレイヤー基本更新（キーボードなど）
         this.player.update(delta);
 
         // =========================
@@ -96,26 +90,14 @@ class Game {
             const targetX =
                 this.input.touchX - this.player.width / 2;
 
-            // 🚀 ブースター位置基準（指の上に機体が乗る）
-            const boosterOffset = 10;
-
             const targetY =
-                this.input.touchY - (this.player.height - boosterOffset);
+                this.input.touchY - (this.player.height - this.player.boosterOffset);
 
-            // ヌル追従
             this.player.x += (targetX - this.player.x) * 0.18;
             this.player.y += (targetY - this.player.y) * 0.18;
 
-            // 画面外制限
-            this.player.x = Math.max(
-                0,
-                Math.min(this.player.x, this.canvas.width - this.player.width)
-            );
-
-            this.player.y = Math.max(
-                0,
-                Math.min(this.player.y, this.canvas.height - this.player.height)
-            );
+            this.player.x = Math.max(0, Math.min(this.player.x, this.canvas.width - this.player.width));
+            this.player.y = Math.max(0, Math.min(this.player.y, this.canvas.height - this.player.height));
         }
 
         // =========================
@@ -135,14 +117,7 @@ class Game {
             );
         }
 
-        // =========================
-        // 弾更新
-        // =========================
-        for (let i = 0; i < this.bullets.length; i++) {
-            this.bullets[i].update(delta);
-        }
-
-        // 画面外弾削除
+        this.bullets.forEach(b => b.update(delta));
         this.bullets = this.bullets.filter(b => b.alive);
     }
 
@@ -153,9 +128,7 @@ class Game {
 
         this.player.draw(this.ctx);
 
-        for (let i = 0; i < this.bullets.length; i++) {
-            this.bullets[i].draw(this.ctx);
-        }
+        this.bullets.forEach(b => b.draw(this.ctx));
     }
 
     backToTitle() {
