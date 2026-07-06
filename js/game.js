@@ -17,6 +17,7 @@ class Game {
         this.titleButton = document.getElementById("titleButton");
 
         this.scoreElement = document.getElementById("score");
+        this.lifeElement = document.getElementById("life");
 
         this.canvas = document.getElementById("gameCanvas");
         this.ctx = this.canvas.getContext("2d");
@@ -32,14 +33,19 @@ class Game {
 
         this.shootTimer = 0;
         this.enemyTimer = 0;
-
         this.enemyShootTimer = 0;
-        this.enemyShootInterval = 1.0;
 
         this.shootInterval = 0.25;
         this.enemyInterval = 1.2;
+        this.enemyShootInterval = 1.0;
 
         this.score = 0;
+
+        // =====================
+        // ❤️ ライフ追加
+        // =====================
+        this.life = 3;
+        this.alive = true;
 
         this.lastTime = 0;
         this.running = false;
@@ -69,9 +75,16 @@ class Game {
         this.gameOver.classList.add("hidden");
         this.gameContainer.classList.remove("hidden");
 
-        if (this.running) return;
-
         this.running = true;
+
+        this.score = 0;
+        this.life = 3;
+        this.alive = true;
+
+        this.bullets = [];
+        this.enemies = [];
+        this.enemyBullets = [];
+
         this.lastTime = performance.now();
 
         requestAnimationFrame((t) => this.loop(t));
@@ -92,10 +105,12 @@ class Game {
 
     update(delta) {
 
+        if (!this.alive) return;
+
         this.player.update(delta);
 
         // =====================
-        // 🔫 プレイヤー弾
+        // プレイヤー弾
         // =====================
         this.shootTimer += delta;
 
@@ -112,7 +127,7 @@ class Game {
         }
 
         // =====================
-        // 👾 敵生成
+        // 敵生成
         // =====================
         this.enemyTimer += delta;
 
@@ -126,7 +141,7 @@ class Game {
         }
 
         // =====================
-        // 👾 敵攻撃
+        // 敵攻撃
         // =====================
         this.enemyShootTimer += delta;
 
@@ -157,7 +172,7 @@ class Game {
         this.enemyBullets = this.enemyBullets.filter(b => b.alive);
 
         // =====================
-        // 💥 当たり判定（プレイヤー弾→敵）
+        // 💥 弾→敵
         // =====================
         for (let i = this.enemies.length - 1; i >= 0; i--) {
 
@@ -173,28 +188,46 @@ class Game {
                     bullet.alive = false;
 
                     this.score += 100;
-
                     break;
                 }
             }
         }
 
         // =====================
-        // 💥 当たり判定（敵弾→プレイヤー）
+        // 💥 敵 or 敵弾 → プレイヤー
         // =====================
-        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
 
-            const b = this.enemyBullets[i];
+        const hitEnemy = this.enemies.some(e => this.isHit(this.player, e));
+        const hitBullet = this.enemyBullets.some(b => this.isHit(this.player, b));
 
-            if (this.isHit(this.player, b)) {
+        if (hitEnemy || hitBullet) {
 
-                b.alive = false;
-
-                console.log("HIT!");
-            }
+            this.takeDamage();
         }
 
         this.scoreElement.textContent = this.score;
+        this.lifeElement.textContent = this.life;
+    }
+
+    takeDamage() {
+
+        this.life--;
+
+        if (this.life <= 0) {
+
+            this.gameOverTrigger();
+        }
+    }
+
+    gameOverTrigger() {
+
+        this.alive = false;
+        this.running = false;
+
+        this.gameContainer.classList.add("hidden");
+        this.gameOver.classList.remove("hidden");
+
+        document.getElementById("finalScore").textContent = this.score;
     }
 
     render() {
@@ -222,6 +255,7 @@ class Game {
     backToTitle() {
 
         this.running = false;
+        this.alive = false;
 
         this.gameContainer.classList.add("hidden");
         this.gameOver.classList.add("hidden");
