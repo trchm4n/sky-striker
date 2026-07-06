@@ -1,5 +1,6 @@
 import InputManager from "./core/inputManager.js";
 import Player from "./entities/player.js";
+import Bullet from "./entities/bullet.js";
 
 class Game {
 
@@ -21,7 +22,13 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
-        // ⏱️ ゲーム時間管理
+        // 🔫 弾管理
+        this.bullets = [];
+
+        // ⏱️ オートショット制御
+        this.shootTimer = 0;
+        this.shootInterval = 0.25; // 0.25秒ごと
+
         this.elapsedTime = 0;
         this.lastTime = 0;
         this.running = false;
@@ -66,7 +73,6 @@ class Game {
         const delta = (time - this.lastTime) / 1000;
         this.lastTime = time;
 
-        // ⏱️ 全体時間更新
         this.elapsedTime += delta;
 
         this.update(delta);
@@ -77,27 +83,35 @@ class Game {
 
     update(delta) {
 
-        // =====================
-        // プレイヤー更新
-        // =====================
         this.player.update(delta);
 
-        // =====================
-        // 将来用：ここに全部集約
-        // =====================
-        this.updateGameLogic(delta);
+        // =========================
+        // 🔫 オートショット
+        // =========================
 
-    }
+        this.shootTimer += delta;
 
-    updateGameLogic(delta) {
+        if (this.shootTimer >= this.shootInterval) {
 
-        // 🔥 今は空（ここが超重要）
-        // 弾・敵・エフェクト・ステージ管理は全部ここに入る
+            this.shootTimer = 0;
 
-        // 例：
-        // this.bullets.update(delta);
-        // this.enemies.update(delta);
-        // this.spawner.update(delta);
+            this.bullets.push(
+                new Bullet(
+                    this.player.x + this.player.width / 2,
+                    this.player.y
+                )
+            );
+
+        }
+
+        // =========================
+        // 弾更新
+        // =========================
+
+        this.bullets.forEach(b => b.update(delta));
+
+        // 死んだ弾削除
+        this.bullets = this.bullets.filter(b => b.alive);
 
     }
 
@@ -107,6 +121,8 @@ class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.player.draw(this.ctx);
+
+        this.bullets.forEach(b => b.draw(this.ctx));
 
     }
 
