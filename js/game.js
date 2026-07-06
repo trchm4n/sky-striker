@@ -2,50 +2,79 @@ class Game {
 
     constructor() {
 
-        this.titleScreen =
-            document.getElementById("titleScreen");
+        // 画面
+        this.titleScreen = document.getElementById("titleScreen");
+        this.gameContainer = document.getElementById("gameContainer");
+        this.gameOver = document.getElementById("gameOver");
 
-        this.gameContainer =
-            document.getElementById("gameContainer");
+        // ボタン
+        this.startButton = document.getElementById("startButton");
+        this.retryButton = document.getElementById("retryButton");
+        this.titleButton = document.getElementById("titleButton");
 
-        this.gameOver =
-            document.getElementById("gameOver");
+        // Canvas
+        this.canvas = document.getElementById("gameCanvas");
+        this.ctx = this.canvas.getContext("2d");
 
-        this.startButton =
-            document.getElementById("startButton");
+        this.lastTime = 0;
 
-        this.retryButton =
-            document.getElementById("retryButton");
+        this.startButton.addEventListener("click", () => this.start());
+        this.retryButton.addEventListener("click", () => this.start());
+        this.titleButton.addEventListener("click", () => this.backToTitle());
 
-        this.titleButton =
-            document.getElementById("titleButton");
+        window.addEventListener("resize", () => this.resizeCanvas());
 
-        this.startButton.addEventListener(
-            "click",
-            () => this.start()
-        );
+        this.resizeCanvas();
+    }
 
-        this.retryButton.addEventListener(
-            "click",
-            () => this.start()
-        );
+    resizeCanvas() {
 
-        this.titleButton.addEventListener(
-            "click",
-            () => this.backToTitle()
-        );
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
 
     }
 
     start() {
 
         this.titleScreen.classList.add("hidden");
-
         this.gameOver.classList.add("hidden");
-
         this.gameContainer.classList.remove("hidden");
 
-        console.log("GAME START");
+        this.lastTime = performance.now();
+
+        requestAnimationFrame((time) => this.loop(time));
+
+    }
+
+    loop(time) {
+
+        const delta = (time - this.lastTime) / 1000;
+
+        this.lastTime = time;
+
+        this.update(delta);
+
+        this.render();
+
+        requestAnimationFrame((t) => this.loop(t));
+
+    }
+
+    update(delta) {
+
+        // 次回からゲーム更新を書く
+
+    }
+
+    render() {
+
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
 
     }
 
