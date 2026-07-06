@@ -24,7 +24,7 @@ export default class Player {
 
     update(delta) {
 
-        // 次回実装
+        // Issue #5で実装
 
     }
 
@@ -32,26 +32,12 @@ export default class Player {
 
         ctx.fillStyle = Player.COLOR;
 
-        ctx.beginPath();
-
-        ctx.moveTo(
-            this.x + this.width / 2,
-            this.y
-        );
-
-        ctx.lineTo(
+        ctx.fillRect(
             this.x,
-            this.y + this.height
+            this.y,
+            this.width,
+            this.height
         );
-
-        ctx.lineTo(
-            this.x + this.width,
-            this.y + this.height
-        );
-
-        ctx.closePath();
-
-        ctx.fill();
 
     }
 
