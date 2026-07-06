@@ -48,7 +48,7 @@ class Game {
         this.alive = true;
 
         // =====================
-        // 🛡 無敵時間
+        // 🛡 無敵
         // =====================
         this.invincible = false;
         this.invincibleTimer = 0;
@@ -107,7 +107,7 @@ class Game {
         this.lastTime = time;
 
         this.update(delta);
-        this.render();
+        this.render(time);
 
         requestAnimationFrame((t) => this.loop(t));
     }
@@ -119,7 +119,7 @@ class Game {
         this.player.update(delta);
 
         // =====================
-        // 🛡 無敵時間更新
+        // 🛡 無敵タイマー
         // =====================
         if (this.invincible) {
 
@@ -131,7 +131,7 @@ class Game {
         }
 
         // =====================
-        // プレイヤー弾
+        // 弾生成
         // =====================
         this.shootTimer += delta;
 
@@ -157,7 +157,6 @@ class Game {
             this.enemyTimer = 0;
 
             const x = Math.random() * (this.canvas.width - 40);
-
             this.enemies.push(new Enemy(x, -40));
         }
 
@@ -215,7 +214,7 @@ class Game {
         }
 
         // =====================
-        // 💥 ダメージ判定（敵・敵弾）
+        // ダメージ判定
         // =====================
         const hitEnemy = this.enemies.some(e => this.isHit(this.player, e));
         const hitBullet = this.enemyBullets.some(b => this.isHit(this.player, b));
@@ -225,7 +224,7 @@ class Game {
             this.takeDamage();
 
             this.invincible = true;
-            this.invincibleTimer = 3.0; // ← 3秒
+            this.invincibleTimer = 3.0;
         }
 
         this.scoreElement.textContent = this.score;
@@ -252,12 +251,27 @@ class Game {
         document.getElementById("finalScore").textContent = this.score;
     }
 
-    render() {
+    render(time) {
 
         this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.player.draw(this.ctx);
+        // =====================
+        // 💡 無敵中点滅
+        // =====================
+        if (!this.invincible) {
+
+            this.player.draw(this.ctx);
+
+        } else {
+
+            // 点滅（0.1秒単位）
+            const blink = Math.floor(time / 100) % 2;
+
+            if (blink === 0) {
+                this.player.draw(this.ctx);
+            }
+        }
 
         this.bullets.forEach(b => b.draw(this.ctx));
         this.enemies.forEach(e => e.draw(this.ctx));
@@ -270,7 +284,7 @@ class Game {
             a.x > b.x + b.width ||
             a.x + a.width < b.x ||
             a.y > b.y + b.height ||
-            a.y + b.height < b.y
+            a.y + a.height < b.y
         );
     }
 
