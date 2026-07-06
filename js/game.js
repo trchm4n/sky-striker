@@ -2,6 +2,7 @@ import InputManager from "./core/inputManager.js";
 import Player from "./entities/player.js";
 import Bullet from "./entities/bullet.js";
 import Enemy from "./entities/enemy.js";
+import EnemyBullet from "./entities/enemyBullet.js";
 
 class Game {
 
@@ -27,11 +28,15 @@ class Game {
 
         this.bullets = [];
         this.enemies = [];
+        this.enemyBullets = [];
 
         this.shootTimer = 0;
-        this.shootInterval = 0.25;
-
         this.enemyTimer = 0;
+
+        this.enemyShootTimer = 0;
+        this.enemyShootInterval = 1.0;
+
+        this.shootInterval = 0.25;
         this.enemyInterval = 1.2;
 
         this.score = 0;
@@ -90,7 +95,7 @@ class Game {
         this.player.update(delta);
 
         // =====================
-        // 🔫 弾
+        // 🔫 プレイヤー弾
         // =====================
         this.shootTimer += delta;
 
@@ -117,9 +122,27 @@ class Game {
 
             const x = Math.random() * (this.canvas.width - 40);
 
-            this.enemies.push(
-                new Enemy(x, -40)
-            );
+            this.enemies.push(new Enemy(x, -40));
+        }
+
+        // =====================
+        // 👾 敵攻撃
+        // =====================
+        this.enemyShootTimer += delta;
+
+        if (this.enemyShootTimer >= this.enemyShootInterval) {
+
+            this.enemyShootTimer = 0;
+
+            this.enemies.forEach(enemy => {
+
+                this.enemyBullets.push(
+                    new EnemyBullet(
+                        enemy.x + enemy.width / 2,
+                        enemy.y + enemy.height
+                    )
+                );
+            });
         }
 
         // =====================
@@ -127,12 +150,14 @@ class Game {
         // =====================
         this.bullets.forEach(b => b.update(delta));
         this.enemies.forEach(e => e.update(delta));
+        this.enemyBullets.forEach(b => b.update(delta));
 
         this.bullets = this.bullets.filter(b => b.alive);
         this.enemies = this.enemies.filter(e => e.alive);
+        this.enemyBullets = this.enemyBullets.filter(b => b.alive);
 
         // =====================
-        // 💥 当たり判定
+        // 💥 当たり判定（プレイヤー弾→敵）
         // =====================
         for (let i = this.enemies.length - 1; i >= 0; i--) {
 
@@ -154,6 +179,21 @@ class Game {
             }
         }
 
+        // =====================
+        // 💥 当たり判定（敵弾→プレイヤー）
+        // =====================
+        for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
+
+            const b = this.enemyBullets[i];
+
+            if (this.isHit(this.player, b)) {
+
+                b.alive = false;
+
+                console.log("HIT!");
+            }
+        }
+
         this.scoreElement.textContent = this.score;
     }
 
@@ -166,6 +206,7 @@ class Game {
 
         this.bullets.forEach(b => b.draw(this.ctx));
         this.enemies.forEach(e => e.draw(this.ctx));
+        this.enemyBullets.forEach(b => b.draw(this.ctx));
     }
 
     isHit(a, b) {
