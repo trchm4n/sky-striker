@@ -1,4 +1,5 @@
 import Player from "./entities/player.js";
+
 class Game {
 
     constructor() {
@@ -18,19 +19,46 @@ class Game {
         this.ctx = this.canvas.getContext("2d");
 
         this.lastTime = 0;
-
-        this.startButton.addEventListener("click", () => this.start());
-        this.retryButton.addEventListener("click", () => this.start());
-        this.titleButton.addEventListener("click", () => this.backToTitle());
-
-        window.addEventListener("resize", () => this.resizeCanvas());
+        this.running = false;
 
         this.resizeCanvas();
+
+        this.player = new Player(this.canvas);
+
+        this.startButton.addEventListener(
+            "click",
+            () => this.start()
+        );
+
+        this.retryButton.addEventListener(
+            "click",
+            () => this.start()
+        );
+
+        this.titleButton.addEventListener(
+            "click",
+            () => this.backToTitle()
+        );
+
+        window.addEventListener(
+            "resize",
+            () => this.onResize()
+        );
+
+    }
+
+    onResize() {
+
+        this.resizeCanvas();
+
+        this.player.resetPosition();
+
     }
 
     resizeCanvas() {
 
         this.canvas.width = window.innerWidth;
+
         this.canvas.height = window.innerHeight;
 
     }
@@ -38,18 +66,29 @@ class Game {
     start() {
 
         this.titleScreen.classList.add("hidden");
+
         this.gameOver.classList.add("hidden");
+
         this.gameContainer.classList.remove("hidden");
 
-        this.lastTime = performance.now();
+        if (!this.running) {
 
-        requestAnimationFrame((time) => this.loop(time));
+            this.running = true;
+
+            this.lastTime = performance.now();
+
+            requestAnimationFrame(
+                (time) => this.loop(time)
+            );
+
+        }
 
     }
 
     loop(time) {
 
-        const delta = (time - this.lastTime) / 1000;
+        const delta =
+            (time - this.lastTime) / 1000;
 
         this.lastTime = time;
 
@@ -57,19 +96,22 @@ class Game {
 
         this.render();
 
-        requestAnimationFrame((t) => this.loop(t));
+        requestAnimationFrame(
+            (t) => this.loop(t)
+        );
 
     }
 
     update(delta) {
 
-        // 次回からゲーム更新を書く
+        this.player.update(delta);
 
     }
 
     render() {
 
         this.ctx.fillStyle = "#000";
+
         this.ctx.fillRect(
             0,
             0,
@@ -77,9 +119,13 @@ class Game {
             this.canvas.height
         );
 
+        this.player.draw(this.ctx);
+
     }
 
     backToTitle() {
+
+        this.running = false;
 
         this.gameContainer.classList.add("hidden");
 
