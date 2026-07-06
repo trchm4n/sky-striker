@@ -23,28 +23,15 @@ class Game {
 
         this.resizeCanvas();
 
+        // プレイヤー生成
         this.player = new Player(this.canvas);
 
-        this.startButton.addEventListener(
-            "click",
-            () => this.start()
-        );
+        // イベント
+        this.startButton.addEventListener("click", () => this.start());
+        this.retryButton.addEventListener("click", () => this.start());
+        this.titleButton.addEventListener("click", () => this.backToTitle());
 
-        this.retryButton.addEventListener(
-            "click",
-            () => this.start()
-        );
-
-        this.titleButton.addEventListener(
-            "click",
-            () => this.backToTitle()
-        );
-
-        window.addEventListener(
-            "resize",
-            () => this.onResize()
-        );
-
+        window.addEventListener("resize", () => this.onResize());
     }
 
     onResize() {
@@ -58,7 +45,6 @@ class Game {
     resizeCanvas() {
 
         this.canvas.width = window.innerWidth;
-
         this.canvas.height = window.innerHeight;
 
     }
@@ -66,29 +52,28 @@ class Game {
     start() {
 
         this.titleScreen.classList.add("hidden");
-
         this.gameOver.classList.add("hidden");
-
         this.gameContainer.classList.remove("hidden");
 
-        if (!this.running) {
-
-            this.running = true;
-
-            this.lastTime = performance.now();
-
-            requestAnimationFrame(
-                (time) => this.loop(time)
-            );
-
+        if (this.running) {
+            return;
         }
+
+        this.running = true;
+
+        this.lastTime = performance.now();
+
+        requestAnimationFrame((time) => this.loop(time));
 
     }
 
     loop(time) {
 
-        const delta =
-            (time - this.lastTime) / 1000;
+        if (!this.running) {
+            return;
+        }
+
+        const delta = (time - this.lastTime) / 1000;
 
         this.lastTime = time;
 
@@ -96,9 +81,7 @@ class Game {
 
         this.render();
 
-        requestAnimationFrame(
-            (t) => this.loop(t)
-        );
+        requestAnimationFrame((t) => this.loop(t));
 
     }
 
@@ -108,47 +91,32 @@ class Game {
 
     }
 
-    // render() {
+    render() {
 
-    //     this.ctx.fillStyle = "#000";
+        // 背景
+        this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
 
-    //     this.ctx.fillRect(
-    //         0,
-    //         0,
-    //         this.canvas.width,
-    //         this.canvas.height
-    //     );
+        // プレイヤー
+        this.player.draw(this.ctx);
 
-    //     this.player.draw(this.ctx);
-
-    // }
-render() {
-
-    this.ctx.fillStyle = "#000";
-    this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height);
-
-    this.ctx.fillStyle = "red";
-    this.ctx.fillRect(100,100,100,100);
-
-}
+    }
 
     backToTitle() {
 
         this.running = false;
 
         this.gameContainer.classList.add("hidden");
-
         this.gameOver.classList.add("hidden");
-
         this.titleScreen.classList.remove("hidden");
 
     }
 
 }
 
-// window.onload = () => {
-
-//     new Game();
-
-// };
 new Game();
