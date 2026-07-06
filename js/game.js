@@ -22,12 +22,12 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
-        // 🔫 弾管理
+        // 弾
         this.bullets = [];
 
-        // ⏱️ オートショット制御
+        // オートショット
         this.shootTimer = 0;
-        this.shootInterval = 0.25; // 0.25秒ごと
+        this.shootInterval = 0.25;
 
         this.elapsedTime = 0;
         this.lastTime = 0;
@@ -38,15 +38,16 @@ class Game {
         this.titleButton.addEventListener("click", () => this.backToTitle());
 
         window.addEventListener("resize", () => this.onResize());
-
     }
 
     onResize() {
+
         this.resizeCanvas();
         this.player.resetPosition();
     }
 
     resizeCanvas() {
+
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
     }
@@ -86,7 +87,26 @@ class Game {
         this.player.update(delta);
 
         // =========================
-        // 🔫 オートショット
+        // スマホ追従（遅延＋オフセット）
+        // =========================
+        if (this.input.touchActive) {
+
+            const offsetY = 80; // 👈 指より上に出す
+
+            const targetX = this.input.touchX - this.player.width / 2;
+            const targetY = this.input.touchY - this.player.height / 2 - offsetY;
+
+            // 追従遅延（ヌルっと動く）
+            this.player.x += (targetX - this.player.x) * 0.18;
+            this.player.y += (targetY - this.player.y) * 0.18;
+
+            // 画面制限
+            this.player.x = Math.max(0, Math.min(this.player.x, this.canvas.width - this.player.width));
+            this.player.y = Math.max(0, Math.min(this.player.y, this.canvas.height - this.player.height));
+        }
+
+        // =========================
+        // オートショット
         // =========================
 
         this.shootTimer += delta;
@@ -101,7 +121,6 @@ class Game {
                     this.player.y
                 )
             );
-
         }
 
         // =========================
@@ -109,10 +128,7 @@ class Game {
         // =========================
 
         this.bullets.forEach(b => b.update(delta));
-
-        // 死んだ弾削除
         this.bullets = this.bullets.filter(b => b.alive);
-
     }
 
     render() {
@@ -123,7 +139,6 @@ class Game {
         this.player.draw(this.ctx);
 
         this.bullets.forEach(b => b.draw(this.ctx));
-
     }
 
     backToTitle() {
@@ -133,9 +148,7 @@ class Game {
         this.gameContainer.classList.add("hidden");
         this.gameOver.classList.add("hidden");
         this.titleScreen.classList.remove("hidden");
-
     }
-
 }
 
 new Game();
