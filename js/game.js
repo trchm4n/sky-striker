@@ -146,8 +146,9 @@ render() {
 
 }
 
-window.onload = () => {
+// window.onload = () => {
 
-    new Game();
+//     new Game();
 
-};
+// };
+new Game();
