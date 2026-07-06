@@ -29,12 +29,8 @@ export default class Player {
 
     draw(ctx) {
 
-        // =========================
-        // 🚀 “最初のかっこよかった版”復元
-        // =========================
-
-        // 本体（ネオン三角）
         ctx.fillStyle = "#00d9ff";
+
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2, this.y);
         ctx.lineTo(this.x, this.y + this.height);
@@ -42,33 +38,13 @@ export default class Player {
         ctx.closePath();
         ctx.fill();
 
-        // コックピット（黒ガラス）
         ctx.fillStyle = "#001b22";
-        ctx.fillRect(
-            this.x + this.width / 2 - 5,
-            this.y + 18,
-            10,
-            16
-        );
+        ctx.fillRect(this.x + this.width / 2 - 5, this.y + 18, 10, 16);
 
-        // 左エンジン
         ctx.fillStyle = "#ff6b00";
-        ctx.fillRect(
-            this.x + 6,
-            this.y + this.height - 8,
-            6,
-            12
-        );
+        ctx.fillRect(this.x + 6, this.y + this.height - 8, 6, 12);
+        ctx.fillRect(this.x + this.width - 12, this.y + this.height - 8, 6, 12);
 
-        // 右エンジン
-        ctx.fillRect(
-            this.x + this.width - 12,
-            this.y + this.height - 8,
-            6,
-            12
-        );
-
-        // ブースター炎（安定版）
         ctx.fillStyle = "#ffcc00";
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2 - 6, this.y + this.height);
