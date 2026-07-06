@@ -11,14 +11,20 @@ export default class Player {
         this.width = Player.WIDTH;
         this.height = Player.HEIGHT;
 
-        this.x = (canvas.width - this.width) / 2;
-        this.y = canvas.height - this.height - 40;
+        this.resetPosition();
+
+    }
+
+    resetPosition() {
+
+        this.x = (this.canvas.width - this.width) / 2;
+        this.y = this.canvas.height - this.height - 40;
 
     }
 
     update(delta) {
 
-        // 次回ここで移動処理を書く
+        // 次回実装
 
     }
 
@@ -28,11 +34,20 @@ export default class Player {
 
         ctx.beginPath();
 
-        ctx.moveTo(this.x + this.width / 2, this.y);
+        ctx.moveTo(
+            this.x + this.width / 2,
+            this.y
+        );
 
-        ctx.lineTo(this.x, this.y + this.height);
+        ctx.lineTo(
+            this.x,
+            this.y + this.height
+        );
 
-        ctx.lineTo(this.x + this.width, this.y + this.height);
+        ctx.lineTo(
+            this.x + this.width,
+            this.y + this.height
+        );
 
         ctx.closePath();
 
