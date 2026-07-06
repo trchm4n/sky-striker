@@ -30,16 +30,10 @@ export default class Player {
     draw(ctx) {
 
         // =========================
-        // 🚀 ネオン宇宙船（復活版）
+        // 🚀 “最初のかっこよかった版”復元
         // =========================
 
-        ctx.save();
-
-        // 光のぼかし（重要）
-        ctx.shadowColor = "#00d9ff";
-        ctx.shadowBlur = 12;
-
-        // メイン船体（シャープ三角）
+        // 本体（ネオン三角）
         ctx.fillStyle = "#00d9ff";
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2, this.y);
@@ -48,39 +42,38 @@ export default class Player {
         ctx.closePath();
         ctx.fill();
 
-        ctx.restore();
-
-        // =========================
-        // コックピット（差し色）
-        // =========================
-
+        // コックピット（黒ガラス）
         ctx.fillStyle = "#001b22";
         ctx.fillRect(
-            this.x + this.width / 2 - 4,
+            this.x + this.width / 2 - 5,
             this.y + 18,
-            8,
-            14
+            10,
+            16
         );
 
-        // =========================
-        // ブースター炎（アニメ感）
-        // =========================
+        // 左エンジン
+        ctx.fillStyle = "#ff6b00";
+        ctx.fillRect(
+            this.x + 6,
+            this.y + this.height - 8,
+            6,
+            12
+        );
 
-        const flame = 6 + Math.random() * 6;
+        // 右エンジン
+        ctx.fillRect(
+            this.x + this.width - 12,
+            this.y + this.height - 8,
+            6,
+            12
+        );
 
+        // ブースター炎（安定版）
         ctx.fillStyle = "#ffcc00";
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2 - 6, this.y + this.height);
-        ctx.lineTo(this.x + this.width / 2, this.y + this.height + flame);
+        ctx.lineTo(this.x + this.width / 2, this.y + this.height + 10);
         ctx.lineTo(this.x + this.width / 2 + 6, this.y + this.height);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.fillStyle = "#ff6b00";
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 - 4, this.y + this.height);
-        ctx.lineTo(this.x + this.width / 2, this.y + this.height + flame * 0.6);
-        ctx.lineTo(this.x + this.width / 2 + 4, this.y + this.height);
         ctx.closePath();
         ctx.fill();
     }
