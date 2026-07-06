@@ -3,6 +3,7 @@ import Player from "./entities/player.js";
 import Bullet from "./entities/bullet.js";
 import Enemy from "./entities/enemy.js";
 import EnemyBullet from "./entities/enemyBullet.js";
+import AudioManager from "./core/audio.js";
 
 class Game {
 
@@ -27,6 +28,8 @@ class Game {
         this.input = new InputManager(this.canvas);
         this.player = new Player(this.canvas, this.input);
 
+        this.audio = new AudioManager();
+
         this.bullets = [];
         this.enemies = [];
         this.enemyBullets = [];
@@ -41,15 +44,9 @@ class Game {
 
         this.score = 0;
 
-        // =====================
-        // ❤️ ライフ
-        // =====================
         this.life = 3;
         this.alive = true;
 
-        // =====================
-        // 🛡 無敵
-        // =====================
         this.invincible = false;
         this.invincibleTimer = 0;
 
@@ -61,18 +58,6 @@ class Game {
         this.titleButton.addEventListener("click", () => this.backToTitle());
 
         window.addEventListener("resize", () => this.onResize());
-    }
-
-    onResize() {
-
-        this.resizeCanvas();
-        this.player.resetPosition();
-    }
-
-    resizeCanvas() {
-
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
     }
 
     start() {
@@ -94,22 +79,26 @@ class Game {
         this.enemies = [];
         this.enemyBullets = [];
 
+        // 🎵 BGM開始
+        this.audio.playBGM();
+
         this.lastTime = performance.now();
 
         requestAnimationFrame((t) => this.loop(t));
     }
 
-    loop(time) {
+    gameOverTrigger() {
 
-        if (!this.running) return;
+        this.alive = false;
+        this.running = false;
 
-        const delta = (time - this.lastTime) / 1000;
-        this.lastTime = time;
+        // 🔇 BGM停止
+        this.audio.stopBGM();
 
-        this.update(delta);
-        this.render(time);
+        this.gameContainer.classList.add("hidden");
+        this.gameOver.classList.remove("hidden");
 
-        requestAnimationFrame((t) => this.loop(t));
+        document.getElementById("finalScore").textContent = this.score;
     }
 
     update(delta) {
@@ -118,21 +107,7 @@ class Game {
 
         this.player.update(delta);
 
-        // =====================
-        // 🛡 無敵タイマー
-        // =====================
-        if (this.invincible) {
-
-            this.invincibleTimer -= delta;
-
-            if (this.invincibleTimer <= 0) {
-                this.invincible = false;
-            }
-        }
-
-        // =====================
-        // 弾生成
-        // =====================
+        // 弾
         this.shootTimer += delta;
 
         if (this.shootTimer >= this.shootInterval) {
@@ -145,11 +120,12 @@ class Game {
                     this.player.y
                 )
             );
+
+            // 🔫 SE
+            this.audio.shoot();
         }
 
-        // =====================
-        // 敵生成
-        // =====================
+        // 敵
         this.enemyTimer += delta;
 
         if (this.enemyTimer >= this.enemyInterval) {
@@ -160,9 +136,7 @@ class Game {
             this.enemies.push(new Enemy(x, -40));
         }
 
-        // =====================
-        // 敵攻撃
-        // =====================
+        // 敵弾
         this.enemyShootTimer += delta;
 
         if (this.enemyShootTimer >= this.enemyShootInterval) {
@@ -180,9 +154,7 @@ class Game {
             });
         }
 
-        // =====================
         // 更新
-        // =====================
         this.bullets.forEach(b => b.update(delta));
         this.enemies.forEach(e => e.update(delta));
         this.enemyBullets.forEach(b => b.update(delta));
@@ -191,9 +163,7 @@ class Game {
         this.enemies = this.enemies.filter(e => e.alive);
         this.enemyBullets = this.enemyBullets.filter(b => b.alive);
 
-        // =====================
         // 弾→敵
-        // =====================
         for (let i = this.enemies.length - 1; i >= 0; i--) {
 
             const enemy = this.enemies[i];
@@ -208,14 +178,16 @@ class Game {
                     bullet.alive = false;
 
                     this.score += 100;
+
+                    // 💥 爆発SE
+                    this.audio.explosion();
+
                     break;
                 }
             }
         }
 
-        // =====================
-        // ダメージ判定
-        // =====================
+        // ダメージ
         const hitEnemy = this.enemies.some(e => this.isHit(this.player, e));
         const hitBullet = this.enemyBullets.some(b => this.isHit(this.player, b));
 
@@ -223,79 +195,15 @@ class Game {
 
             this.takeDamage();
 
+            // 💥 被弾SE
+            this.audio.hit();
+
             this.invincible = true;
             this.invincibleTimer = 3.0;
         }
 
         this.scoreElement.textContent = this.score;
         this.lifeElement.textContent = this.life;
-    }
-
-    takeDamage() {
-
-        this.life--;
-
-        if (this.life <= 0) {
-            this.gameOverTrigger();
-        }
-    }
-
-    gameOverTrigger() {
-
-        this.alive = false;
-        this.running = false;
-
-        this.gameContainer.classList.add("hidden");
-        this.gameOver.classList.remove("hidden");
-
-        document.getElementById("finalScore").textContent = this.score;
-    }
-
-    render(time) {
-
-        this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // =====================
-        // 💡 無敵中点滅
-        // =====================
-        if (!this.invincible) {
-
-            this.player.draw(this.ctx);
-
-        } else {
-
-            // 点滅（0.1秒単位）
-            const blink = Math.floor(time / 100) % 2;
-
-            if (blink === 0) {
-                this.player.draw(this.ctx);
-            }
-        }
-
-        this.bullets.forEach(b => b.draw(this.ctx));
-        this.enemies.forEach(e => e.draw(this.ctx));
-        this.enemyBullets.forEach(b => b.draw(this.ctx));
-    }
-
-    isHit(a, b) {
-
-        return !(
-            a.x > b.x + b.width ||
-            a.x + a.width < b.x ||
-            a.y > b.y + b.height ||
-            a.y + a.height < b.y
-        );
-    }
-
-    backToTitle() {
-
-        this.running = false;
-        this.alive = false;
-
-        this.gameContainer.classList.add("hidden");
-        this.gameOver.classList.add("hidden");
-        this.titleScreen.classList.remove("hidden");
     }
 }
 
