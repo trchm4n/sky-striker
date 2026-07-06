@@ -23,215 +23,127 @@ body {
 #gameOver {
     position: absolute;
     inset: 0;
-
     display: flex;
     flex-direction: column;
-
     justify-content: center;
     align-items: center;
-
-    background:
-        radial-gradient(circle at top, #223, #000 70%);
+    background: radial-gradient(circle at top, #223, #000 70%);
 }
 
 h1 {
-
     font-size: 64px;
-
     color: #00d9ff;
-
-    text-shadow:
-        0 0 10px cyan,
-        0 0 20px cyan,
-        0 0 40px cyan;
-
+    text-shadow: 0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan;
     margin-bottom: 20px;
 }
 
 .subtitle {
-
     color: #ddd;
-
     margin-bottom: 30px;
-
     font-size: 18px;
-
 }
 
 .help {
-
     margin-top: 30px;
-
     background: rgba(255,255,255,.08);
-
     padding: 20px;
-
     border-radius: 12px;
-
     max-width: 420px;
-
 }
 
-.help h2{
-
-    margin-bottom:12px;
-
-    color:#00d9ff;
-
+.help h2 {
+    margin-bottom: 12px;
+    color: #00d9ff;
 }
 
-.help ul{
-
-    margin-left:20px;
-
-    line-height:1.8;
-
+.help ul {
+    margin-left: 20px;
+    line-height: 1.8;
 }
 
-.highscore{
-
-    margin-top:30px;
-
-    font-size:24px;
-
-    color:gold;
-
+.highscore {
+    margin-top: 30px;
+    font-size: 24px;
+    color: gold;
 }
 
-button{
-
-    cursor:pointer;
-
-    padding:
-
-        15px 40px;
-
-    font-size:22px;
-
-    border:none;
-
-    border-radius:12px;
-
-    background:#00d9ff;
-
-    color:#000;
-
-    font-weight:bold;
-
-    transition:.2s;
-
-    margin:10px;
-
+button {
+    cursor: pointer;
+    padding: 15px 40px;
+    font-size: 22px;
+    border: none;
+    border-radius: 12px;
+    background: #00d9ff;
+    color: #000;
+    font-weight: bold;
+    transition: .2s;
+    margin: 10px;
 }
 
-button:hover{
-
-    transform:scale(1.08);
-
+button:hover {
+    transform: scale(1.08);
 }
 
-button:active{
-
-    transform:scale(.96);
-
+button:active {
+    transform: scale(.96);
 }
 
-#gameContainer{
-
-    position:absolute;
-
-    inset:0;
-
+#gameContainer {
+    position: absolute;
+    inset: 0;
 }
 
-canvas{
+canvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    background: #000;
 
-    width:100vw;
-
-    height:100vh;
-
-    display:block;
-
-    background:#000;
-
+    /* 🚨 追加（スマホ暴走防止） */
+    touch-action: none;
 }
 
-#hud{
-
-    position:absolute;
-
-    left:0;
-
-    top:0;
-
-    width:100%;
-
-    padding:15px;
-
-    display:flex;
-
-    justify-content:space-around;
-
-    pointer-events:none;
-
-    font-weight:bold;
-
-    text-shadow:
-
-        0 0 8px black;
-
+#hud {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 15px;
+    display: flex;
+    justify-content: space-around;
+    pointer-events: none;
+    font-weight: bold;
+    text-shadow: 0 0 8px black;
 }
 
-.hudItem{
-
-    background:rgba(0,0,0,.4);
-
-    padding:8px 14px;
-
-    border-radius:10px;
-
-    border:1px solid rgba(255,255,255,.2);
-
+.hudItem {
+    background: rgba(0,0,0,.4);
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.2);
 }
 
-.finalScore{
-
-    font-size:32px;
-
-    margin:30px;
-
+.finalScore {
+    font-size: 32px;
+    margin: 30px;
 }
 
-@media(max-width:768px){
+@media (max-width: 768px) {
 
-    h1{
+    h1 { font-size: 42px; }
 
-        font-size:42px;
-
+    button {
+        width: 260px;
+        font-size: 20px;
     }
 
-    button{
-
-        width:260px;
-
-        font-size:20px;
-
+    .help {
+        width: 90%;
+        font-size: 15px;
     }
 
-    .help{
-
-        width:90%;
-
-        font-size:15px;
-
+    #hud {
+        font-size: 15px;
+        padding: 10px;
     }
-
-    #hud{
-
-        font-size:15px;
-
-        padding:10px;
-
-    }
-
 }
