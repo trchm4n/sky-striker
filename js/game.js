@@ -261,16 +261,28 @@ class Game {
             () => this.backToTitle()
         );
 
-        this.nextStageButton.addEventListener(
-            "click",
-            () => this.nextStage()
-        );
+        if(
+            this.nextStageButton
+        ){
+        
+            this.nextStageButton.addEventListener(
+                "click",
+                () => this.nextStage()
+            );
+        
+        }
         
         
-        this.clearTitleButton.addEventListener(
-            "click",
-            () => this.backToTitle()
-        );
+        if(
+            this.clearTitleButton
+        ){
+        
+            this.clearTitleButton.addEventListener(
+                "click",
+                () => this.backToTitle()
+            );
+        
+        }
 
         window.addEventListener(
             "resize",
