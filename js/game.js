@@ -1436,7 +1436,7 @@ stageClearTrigger() {
         "hidden"
     );
 
-
+    this.stageClear.style.zIndex = "100";
 }
 
 
