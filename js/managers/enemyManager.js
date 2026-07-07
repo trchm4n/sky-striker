@@ -48,11 +48,13 @@ export default class EnemyManager {
 
     }
 
-    update(delta) {
+update(delta, canSpawnEnemy = true) {
 
-        // =====================
-        // 敵生成
-        // =====================
+    // =====================
+    // 敵生成
+    // =====================
+
+    if (canSpawnEnemy) {
 
         this.enemyTimer += delta;
 
@@ -76,67 +78,61 @@ export default class EnemyManager {
 
         }
 
-        // =====================
-        // 敵弾発射
-        // =====================
+    }
 
-        this.enemyShootTimer += delta;
+    // =====================
+    // 敵弾発射
+    // =====================
 
-        if (this.enemyShootTimer >= this.enemyShootInterval) {
+    this.enemyShootTimer += delta;
 
-            this.enemyShootTimer = 0;
+    if (this.enemyShootTimer >= this.enemyShootInterval) {
 
-            this.enemies.forEach(enemy => {
-
-                this.enemyBullets.push(
-
-                    new EnemyBullet(
-
-                        enemy.x +
-                        enemy.width / 2,
-
-                        enemy.y +
-                        enemy.height
-
-                    )
-
-                );
-
-            });
-
-        }
-
-        // =====================
-        // 更新
-        // =====================
+        this.enemyShootTimer = 0;
 
         this.enemies.forEach(enemy => {
 
-            enemy.update(delta);
+            this.enemyBullets.push(
 
-        });
+                new EnemyBullet(
 
-        this.enemyBullets.forEach(bullet => {
+                    enemy.x +
+                    enemy.width / 2,
 
-            bullet.update(delta);
+                    enemy.y +
+                    enemy.height
 
-        });
+                )
 
-        // =====================
-        // 削除
-        // =====================
-
-        this.enemies =
-            this.enemies.filter(
-                enemy => enemy.alive
             );
 
-        this.enemyBullets =
-            this.enemyBullets.filter(
-                bullet => bullet.alive
-            );
+        });
 
     }
+
+    // =====================
+    // 更新
+    // =====================
+
+    this.enemies.forEach(enemy => enemy.update(delta));
+
+    this.enemyBullets.forEach(bullet => bullet.update(delta));
+
+    // =====================
+    // 削除
+    // =====================
+
+    this.enemies =
+        this.enemies.filter(
+            enemy => enemy.alive
+        );
+
+    this.enemyBullets =
+        this.enemyBullets.filter(
+            bullet => bullet.alive
+        );
+
+}
 
     draw(ctx) {
 
