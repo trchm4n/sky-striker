@@ -4,105 +4,123 @@ export default class AudioManager {
 
         this.enabled = true;
 
+        this.context = null;
 
-        // =====================
-        // BGM
-        // =====================
+        this.buffers = {};
 
-        this.bgm = new Audio(
-            "assets/bgm.mp3"
-        );
+        this.bgmSource = null;
 
-        this.bgm.loop = true;
-        this.bgm.volume = 0.3;
+        this.loaded = false;
 
 
-        // =====================
-        // SE
-        // =====================
+        this.files = {
 
-        this.shootSE = new Audio(
-            "assets/se_shoot.mp3"
-        );
+            bgm: "assets/bgm.mp3",
 
-        this.hitSE = new Audio(
-            "assets/se_hit.mp3"
-        );
+            shoot: "assets/se_shoot.mp3",
 
-        this.explosionSE = new Audio(
-            "assets/se_explosion.mp3"
-        );
+            hit: "assets/se_hit.mp3",
+
+            explosion: "assets/se_explosion.mp3"
+
+        };
 
 
-        this.shootSE.volume = 0.4;
-        this.hitSE.volume = 0.5;
-        this.explosionSE.volume = 0.5;
-
-
-        // =====================
-        // 制御
-        // =====================
-
-        this.lastShootTime = 0;
+        this.loadPromise = this.loadSounds();
 
     }
 
 
-    play(audio) {
 
-        if (!this.enabled) {
+    // =====================
+    // AudioContext初期化
+    // =====================
+
+    initContext() {
+
+        if (this.context) {
             return;
         }
 
 
-        audio.currentTime = 0;
+        this.context =
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
 
 
-        const promise = audio.play();
+
+    // =====================
+    // 音ロード
+    // =====================
+
+    async loadSounds() {
+
+        this.initContext();
 
 
-        if (promise !== undefined) {
+        for (const key in this.files) {
 
-            promise.catch(() => {});
+            const response =
+                await fetch(this.files[key]);
+
+
+            const arrayBuffer =
+                await response.arrayBuffer();
+
+
+            const audioBuffer =
+                await this.context.decodeAudioData(
+                    arrayBuffer
+                );
+
+
+            this.buffers[key] =
+                audioBuffer;
 
         }
 
-    }
 
-
-
-    playBGM() {
-
-        if (!this.enabled) {
-            return;
-        }
-
-
-        this.bgm.play()
-            .catch(() => {});
+        this.loaded = true;
 
     }
 
 
 
-    stopBGM() {
+    // =====================
+    // 再生準備
+    // =====================
 
-        this.bgm.pause();
+    async ready() {
 
-        this.bgm.currentTime = 0;
-
-    }
-
-
-
-    shoot() {
-
-        const now = performance.now();
+        await this.loadPromise;
 
 
-        // 連射音負荷軽減
         if (
-            now - this.lastShootTime < 120
+            this.context.state === "suspended"
+        ) {
+
+            await this.context.resume();
+
+        }
+
+    }
+
+
+
+    // =====================
+    // SE再生
+    // =====================
+
+    playSE(name) {
+
+
+        if (
+            !this.enabled ||
+            !this.loaded
         ) {
 
             return;
@@ -110,11 +128,94 @@ export default class AudioManager {
         }
 
 
-        this.lastShootTime = now;
+        const source =
+            this.context.createBufferSource();
 
 
-        this.play(
-            this.shootSE
+        source.buffer =
+            this.buffers[name];
+
+
+        source.connect(
+            this.context.destination
+        );
+
+
+        source.start(0);
+
+    }
+
+
+
+    // =====================
+    // BGM
+    // =====================
+
+    async playBGM() {
+
+
+        if (!this.enabled) {
+            return;
+        }
+
+
+        await this.ready();
+
+
+        if (this.bgmSource) {
+
+            return;
+
+        }
+
+
+        this.bgmSource =
+            this.context.createBufferSource();
+
+
+        this.bgmSource.buffer =
+            this.buffers.bgm;
+
+
+        this.bgmSource.loop = true;
+
+
+        this.bgmSource.connect(
+            this.context.destination
+        );
+
+
+        this.bgmSource.start(0);
+
+    }
+
+
+
+    stopBGM() {
+
+
+        if (this.bgmSource) {
+
+            this.bgmSource.stop();
+
+            this.bgmSource.disconnect();
+
+            this.bgmSource = null;
+
+        }
+
+    }
+
+
+
+    // =====================
+    // ゲーム側呼び出し
+    // =====================
+
+    shoot() {
+
+        this.playSE(
+            "shoot"
         );
 
     }
@@ -123,8 +224,8 @@ export default class AudioManager {
 
     hit() {
 
-        this.play(
-            this.hitSE
+        this.playSE(
+            "hit"
         );
 
     }
@@ -133,8 +234,8 @@ export default class AudioManager {
 
     explosion() {
 
-        this.play(
-            this.explosionSE
+        this.playSE(
+            "explosion"
         );
 
     }
