@@ -261,28 +261,16 @@ class Game {
             () => this.backToTitle()
         );
 
-        if(
-            this.nextStageButton
-        ){
-        
-            this.nextStageButton.addEventListener(
-                "click",
-                () => this.nextStage()
-            );
-        
-        }
+        this.nextStageButton.addEventListener(
+            "click",
+            () => this.nextStage()
+        );
         
         
-        if(
-            this.clearTitleButton
-        ){
-        
-            this.clearTitleButton.addEventListener(
-                "click",
-                () => this.backToTitle()
-            );
-        
-        }
+        this.clearTitleButton.addEventListener(
+            "click",
+            () => this.backToTitle()
+        );
 
         window.addEventListener(
             "resize",
@@ -1448,7 +1436,7 @@ stageClearTrigger() {
         "hidden"
     );
 
-    this.stageClear.style.zIndex = "100";
+
 }
 
 
