@@ -7,6 +7,7 @@ import AudioManager from "./core/audio.js";
 import Explosion from "./effects/explosion.js";
 import ScoreManager from "./core/scoreManager.js";
 import Item from "./entities/item.js";
+import Boss from "./entities/boss.js";
 
 
 class Game {
@@ -90,6 +91,7 @@ class Game {
 
 
 
+
         this.input =
             new InputManager(
                 this.canvas
@@ -127,6 +129,16 @@ class Game {
         this.explosions = [];
 
         this.items = [];
+
+
+
+        // Boss
+
+        this.boss = null;
+
+        this.enemyKillCount = 0;
+
+        this.bossSpawned = false;
 
 
 
@@ -272,6 +284,14 @@ class Game {
         this.explosions = [];
 
         this.items = [];
+
+
+
+        this.boss = null;
+
+        this.enemyKillCount = 0;
+
+        this.bossSpawned = false;
 
 
 
@@ -448,6 +468,7 @@ class Game {
 
 
 
+
         // =====================
         // 無敵時間
         // =====================
@@ -458,6 +479,7 @@ class Game {
 
 
             this.invincibleTimer -= delta;
+
 
 
             if (
@@ -475,7 +497,7 @@ class Game {
 
 
         // =====================
-        // ショット
+        // プレイヤーショット
         // =====================
 
         this.shootTimer += delta;
@@ -492,25 +514,23 @@ class Game {
 
 
 
-            const positions =
-                this.player.getShootPositions();
+            this.player
+                .getShootPositions()
+                .forEach(
+                    pos => {
 
 
-
-            positions.forEach(
-                pos => {
-
-
-                    this.bullets.push(
-                        new Bullet(
-                            pos.x,
-                            pos.y
-                        )
-                    );
+                        this.bullets.push(
+                            new Bullet(
+                                pos.x,
+                                pos.y
+                            )
+                        );
 
 
-                }
-            );
+                    }
+                );
+
 
 
             this.audio.shoot();
@@ -523,38 +543,46 @@ class Game {
 
         // =====================
         // 敵生成
+        // ボス中は停止
         // =====================
 
-        this.enemyTimer += delta;
-
-
-
         if (
-            this.enemyTimer >=
-            this.enemyInterval
+            !this.bossSpawned
         ) {
 
 
-            this.enemyTimer = 0;
+            this.enemyTimer += delta;
 
 
 
-            const x =
-                Math.random() *
-                (
-                    this.canvas.width -
-                    40
+            if (
+                this.enemyTimer >=
+                this.enemyInterval
+            ) {
+
+
+                this.enemyTimer = 0;
+
+
+
+                const x =
+                    Math.random() *
+                    (
+                        this.canvas.width -
+                        40
+                    );
+
+
+
+                this.enemies.push(
+                    new Enemy(
+                        x,
+                        -40,
+                        this.getEnemyType()
+                    )
                 );
 
-
-
-            this.enemies.push(
-                new Enemy(
-                    x,
-                    -40,
-                    this.getEnemyType()
-                )
-            );
+            }
 
         }
 
@@ -594,6 +622,7 @@ class Game {
                         )
                     );
 
+
                 }
             );
 
@@ -604,36 +633,76 @@ class Game {
 
 
         // =====================
-        // 更新
+        // ボス更新
+        // =====================
+
+        if (
+            this.boss &&
+            this.boss.alive
+        ) {
+
+
+            const attack =
+                this.boss.update(delta);
+
+
+
+            if (
+                attack
+            ) {
+
+
+                const point =
+                    this.boss.getShootPoint();
+
+
+
+                this.enemyBullets.push(
+                    new EnemyBullet(
+                        point.x,
+                        point.y
+                    )
+                );
+
+            }
+
+        }
+
+
+
+
+
+        // =====================
+        // Object更新
         // =====================
 
         this.bullets.forEach(
-            bullet =>
-                bullet.update(delta)
+            b =>
+                b.update(delta)
         );
 
 
         this.enemies.forEach(
-            enemy =>
-                enemy.update(delta)
+            e =>
+                e.update(delta)
         );
 
 
         this.enemyBullets.forEach(
-            bullet =>
-                bullet.update(delta)
+            b =>
+                b.update(delta)
         );
 
 
         this.items.forEach(
-            item =>
-                item.update(delta)
+            i =>
+                i.update(delta)
         );
 
 
         this.explosions.forEach(
-            explosion =>
-                explosion.update(delta)
+            e =>
+                e.update(delta)
         );
 
 
@@ -641,7 +710,7 @@ class Game {
 
 
         // =====================
-        // 敵撃破判定
+        // 敵撃破
         // =====================
 
         for (
@@ -686,10 +755,35 @@ class Game {
 
 
 
+                    this.enemyKillCount++;
+
+
+
                     // =====================
+                    // ボス出現
+                    // =====================
+
+                    if (
+                        this.enemyKillCount >= 30 &&
+                        !this.bossSpawned
+                    ) {
+
+
+                        this.boss =
+                            new Boss(
+                                this.canvas
+                            );
+
+
+                        this.bossSpawned = true;
+
+
+                    }
+
+
+
+
                     // アイテムドロップ
-                    // 10%
-                    // =====================
 
                     if (
                         Math.random() < 0.1
@@ -720,7 +814,6 @@ class Game {
                     );
 
 
-
                     this.audio.explosion();
 
 
@@ -730,6 +823,89 @@ class Game {
                 }
 
             }
+
+        }
+
+
+
+
+
+        // =====================
+        // ボス被弾
+        // =====================
+
+        if (
+            this.boss &&
+            this.boss.alive
+        ) {
+
+
+            for (
+                const bullet of this.bullets
+            ) {
+
+
+                if (
+                    this.isHit(
+                        this.boss,
+                        bullet
+                    )
+                ) {
+
+
+                    bullet.alive = false;
+
+
+                    this.boss.hit(
+                        50
+                    );
+
+
+                    this.score += 10;
+
+
+                }
+
+            }
+
+
+        }
+
+
+
+
+
+        // =====================
+        // ボス撃破
+        // =====================
+
+        if (
+            this.boss &&
+            !this.boss.alive
+        ) {
+
+
+            this.score += 5000;
+
+
+
+            this.explosions.push(
+                new Explosion(
+                    this.boss.x +
+                    this.boss.width / 2,
+
+                    this.boss.y +
+                    this.boss.height / 2
+                )
+            );
+
+
+
+            this.audio.explosion();
+
+
+
+            this.boss = null;
 
         }
 
@@ -763,9 +939,7 @@ class Game {
                 ) {
 
 
-
                     case "heal":
-
 
                         if (
                             this.life < 3
@@ -775,31 +949,23 @@ class Game {
 
                         }
 
-
                         break;
-
 
 
 
                     case "power":
 
-
                         this.player.powerUp();
-
 
                         break;
 
 
 
-
                     case "shield":
-
 
                         this.invincible = true;
 
-
                         this.invincibleTimer = 10;
-
 
                         break;
 
@@ -819,10 +985,10 @@ class Game {
 
         const hitEnemy =
             this.enemies.some(
-                enemy =>
+                e =>
                     this.isHit(
                         this.player,
-                        enemy
+                        e
                     )
             );
 
@@ -830,10 +996,10 @@ class Game {
 
         const hitBullet =
             this.enemyBullets.some(
-                bullet =>
+                b =>
                     this.isHit(
                         this.player,
-                        bullet
+                        b
                     )
             );
 
@@ -911,8 +1077,6 @@ class Game {
 
 
 
-
-
         this.scoreElement.textContent =
             this.score;
 
@@ -947,7 +1111,6 @@ class Game {
             Math.floor(time / 100) % 2 === 0
         ) {
 
-
             this.player.draw(
                 this.ctx
             );
@@ -957,32 +1120,44 @@ class Game {
 
 
         this.bullets.forEach(
-            bullet =>
-                bullet.draw(this.ctx)
+            b =>
+                b.draw(this.ctx)
         );
 
 
         this.enemies.forEach(
-            enemy =>
-                enemy.draw(this.ctx)
+            e =>
+                e.draw(this.ctx)
         );
 
 
         this.enemyBullets.forEach(
-            bullet =>
-                bullet.draw(this.ctx)
+            b =>
+                b.draw(this.ctx)
         );
 
 
         this.items.forEach(
-            item =>
-                item.draw(this.ctx)
+            i =>
+                i.draw(this.ctx)
         );
 
 
+        if (
+            this.boss &&
+            this.boss.alive
+        ) {
+
+            this.boss.draw(
+                this.ctx
+            );
+
+        }
+
+
         this.explosions.forEach(
-            explosion =>
-                explosion.draw(this.ctx)
+            e =>
+                e.draw(this.ctx)
         );
 
     }
@@ -991,7 +1166,7 @@ class Game {
 
 
 
-    isHit(a, b) {
+    isHit(a,b) {
 
 
         return !(
