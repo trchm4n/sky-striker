@@ -5,6 +5,7 @@ import Enemy from "./entities/enemy.js";
 import EnemyBullet from "./entities/enemyBullet.js";
 import AudioManager from "./core/audio.js";
 import Explosion from "./effects/explosion.js";
+import ScoreManager from "./core/scoreManager.js";
 
 
 class Game {
@@ -40,6 +41,10 @@ class Game {
             document.getElementById("life");
 
 
+        this.highScoreElement =
+            document.getElementById("highScore");
+
+
 
         this.canvas =
             document.getElementById("gameCanvas");
@@ -69,6 +74,10 @@ class Game {
 
         this.audio =
             new AudioManager();
+
+
+        this.scoreManager =
+            new ScoreManager();
 
 
 
@@ -136,6 +145,26 @@ class Game {
             () => this.onResize()
         );
 
+
+
+        this.updateHighScore();
+
+    }
+
+
+
+    updateHighScore() {
+
+
+        if (!this.highScoreElement) {
+            return;
+        }
+
+
+        this.highScoreElement.textContent =
+            "BEST SCORE : " +
+            this.scoreManager.getHighScore();
+
     }
 
 
@@ -161,12 +190,13 @@ class Game {
 
         this.running = true;
 
+        this.alive = true;
+
+
 
         this.score = 0;
 
         this.life = 3;
-
-        this.alive = true;
 
 
 
@@ -177,6 +207,12 @@ class Game {
         this.enemyBullets = [];
 
         this.explosions = [];
+
+
+
+        this.invincible = false;
+
+        this.invincibleTimer = 0;
 
 
 
@@ -197,11 +233,14 @@ class Game {
 
 
 
+
     loop(time) {
 
 
         if (!this.running) {
+
             return;
+
         }
 
 
@@ -231,11 +270,15 @@ class Game {
 
 
 
+
+
     update(delta) {
 
 
         if (!this.alive) {
+
             return;
+
         }
 
 
@@ -263,9 +306,8 @@ class Game {
 
 
 
-        // プレイヤー弾
-
         this.shootTimer += delta;
+
 
 
         if (
@@ -293,9 +335,8 @@ class Game {
 
 
 
-        // 敵生成
-
         this.enemyTimer += delta;
+
 
 
         if (
@@ -326,10 +367,8 @@ class Game {
 
 
 
-
-        // 敵攻撃
-
         this.enemyShootTimer += delta;
+
 
 
         if (
@@ -341,10 +380,8 @@ class Game {
             this.enemyShootTimer = 0;
 
 
-
             this.enemies.forEach(
                 enemy => {
-
 
                     this.enemyBullets.push(
                         new EnemyBullet(
@@ -356,14 +393,13 @@ class Game {
                         )
                     );
 
-
                 }
             );
 
         }
-
-
-
+        // =====================
+        // オブジェクト更新
+        // =====================
 
         this.bullets.forEach(
             b => b.update(delta)
@@ -411,9 +447,9 @@ class Game {
 
 
 
-
-
-        // 弾と敵
+        // =====================
+        // 弾 → 敵
+        // =====================
 
         for (
             let i = this.enemies.length - 1;
@@ -426,7 +462,6 @@ class Game {
                 this.enemies[i];
 
 
-
             for (
                 let j = this.bullets.length - 1;
                 j >= 0;
@@ -436,7 +471,6 @@ class Game {
 
                 const bullet =
                     this.bullets[j];
-
 
 
                 if (
@@ -468,7 +502,6 @@ class Game {
                     );
 
 
-
                     this.audio.explosion();
 
 
@@ -483,6 +516,9 @@ class Game {
 
 
 
+        // =====================
+        // プレイヤーダメージ
+        // =====================
 
         const hitEnemy =
             this.enemies.some(
@@ -517,8 +553,8 @@ class Game {
             this.audio.hit();
 
 
-
             this.invincible = true;
+
 
             this.invincibleTimer = 3;
 
@@ -565,6 +601,8 @@ class Game {
 
 
 
+        // 無敵点滅
+
         if (
             !this.invincible ||
             Math.floor(time / 100) % 2 === 0
@@ -603,6 +641,82 @@ class Game {
 
 
 
+    // =====================
+    // GAME OVER
+    // =====================
+
+    gameOverTrigger() {
+
+
+        this.running = false;
+
+        this.alive = false;
+
+
+
+        this.audio.stopBGM();
+
+
+
+        const newRecord =
+            this.scoreManager.saveScore(
+                this.score
+            );
+
+
+
+        this.gameContainer.classList.add(
+            "hidden"
+        );
+
+
+        this.gameOver.classList.remove(
+            "hidden"
+        );
+
+
+
+        document
+            .getElementById(
+                "finalScore"
+            )
+            .textContent =
+            this.score;
+
+
+
+        this.updateHighScore();
+
+
+
+        if (newRecord) {
+
+
+            const element =
+                document.getElementById(
+                    "newRecord"
+                );
+
+
+            if (element) {
+
+                element.textContent =
+                    "NEW RECORD!!";
+
+            }
+
+        }
+
+    }
+
+
+
+
+
+    // =====================
+    // Collision
+    // =====================
+
     isHit(a, b) {
 
 
@@ -624,6 +738,12 @@ class Game {
 
 
 
+
+
+    // =====================
+    // Resize
+    // =====================
+
     resizeCanvas() {
 
 
@@ -643,41 +763,18 @@ class Game {
 
         this.resizeCanvas();
 
+
         this.player.resetPosition();
 
     }
 
 
 
-    gameOverTrigger() {
 
 
-        this.running = false;
-
-        this.alive = false;
-
-
-        this.audio.stopBGM();
-
-
-        this.gameContainer.classList.add(
-            "hidden"
-        );
-
-
-        this.gameOver.classList.remove(
-            "hidden"
-        );
-
-
-        document
-            .getElementById("finalScore")
-            .textContent =
-            this.score;
-
-    }
-
-
+    // =====================
+    // TITLE
+    // =====================
 
     backToTitle() {
 
@@ -686,6 +783,7 @@ class Game {
 
 
         this.audio.stopBGM();
+
 
 
         this.gameContainer.classList.add(
@@ -702,9 +800,13 @@ class Game {
             "hidden"
         );
 
+
+        this.updateHighScore();
+
     }
 
 }
+
 
 
 window.onload = () => {
