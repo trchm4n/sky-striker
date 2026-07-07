@@ -1,8 +1,7 @@
 import InputManager from "./core/inputManager.js";
 import Player from "./entities/player.js";
 import Bullet from "./entities/bullet.js";
-import Enemy from "./entities/enemy.js";
-import EnemyBullet from "./entities/enemyBullet.js";
+import EnemyManager from "./managers/enemyManager.js";
 import AudioManager from "./core/audio.js";
 import Explosion from "./effects/explosion.js";
 import ScoreManager from "./core/scoreManager.js";
@@ -13,236 +12,172 @@ import Boss from "./entities/boss.js";
 class Game {
 
 
-    constructor() {
-
-
-        this.titleScreen =
-            document.getElementById(
-                "titleScreen"
-            );
-
-
-        this.gameContainer =
-            document.getElementById(
-                "gameContainer"
-            );
-
-
-        this.gameOver =
-            document.getElementById(
-                "gameOver"
-            );
-
-
-
-        this.startButton =
-            document.getElementById(
-                "startButton"
-            );
-
-
-        this.retryButton =
-            document.getElementById(
-                "retryButton"
-            );
-
-
-        this.titleButton =
-            document.getElementById(
-                "titleButton"
-            );
-
-
-
-        this.scoreElement =
-            document.getElementById(
-                "score"
-            );
-
-
-        this.lifeElement =
-            document.getElementById(
-                "life"
-            );
-
-
-        this.highScoreElement =
-            document.getElementById(
-                "highScoreValue"
-            );
-
-
-
-        // =====================
-        // BOSS UI
-        // =====================
-
-        this.bossHp =
-            document.getElementById(
-                "bossHp"
-            );
-
-
-        this.bossGauge =
-            document.getElementById(
-                "bossGauge"
-            );
-
-
-
-
-
-        this.canvas =
-            document.getElementById(
-                "gameCanvas"
-            );
-
-
-        this.ctx =
-            this.canvas.getContext(
-                "2d"
-            );
-
-
-
-        this.resizeCanvas();
-
-
-
-
-
-        this.input =
-            new InputManager(
-                this.canvas
-            );
-
-
-        this.player =
-            new Player(
-                this.canvas,
-                this.input
-            );
-
-
-        this.audio =
-            new AudioManager();
-
-
-        this.scoreManager =
-            new ScoreManager();
-
-
-
-
-
-        // =====================
-        // Object
-        // =====================
-
-        this.bullets = [];
-
-        this.enemies = [];
-
-        this.enemyBullets = [];
-
-        this.explosions = [];
-
-        this.items = [];
-
-
-
-        this.boss = null;
-
-        this.enemyKillCount = 0;
-
-        this.bossSpawned = false;
-
-
-
-
-
-        // =====================
-        // Timer
-        // =====================
-
-        this.shootTimer = 0;
-
-        this.enemyTimer = 0;
-
-        this.enemyShootTimer = 0;
-
-
-
-
-        this.shootInterval = 0.25;
-
-        this.enemyInterval = 1.2;
-
-        this.enemyShootInterval = 1.0;
-
-
-
-
-
-        // =====================
-        // Status
-        // =====================
-
-        this.score = 0;
-
-        this.life = 3;
-
-        this.alive = true;
-
-
-
-        this.invincible = false;
-
-        this.invincibleTimer = 0;
-
-
-
-        this.lastTime = 0;
-
-        this.running = false;
-
-
-
-
-
-        this.startButton.addEventListener(
-            "click",
-            () => this.start()
+constructor() {
+
+    this.titleScreen =
+        document.getElementById(
+            "titleScreen"
         );
 
-
-        this.retryButton.addEventListener(
-            "click",
-            () => this.start()
+    this.gameContainer =
+        document.getElementById(
+            "gameContainer"
         );
 
-
-        this.titleButton.addEventListener(
-            "click",
-            () => this.backToTitle()
+    this.gameOver =
+        document.getElementById(
+            "gameOver"
         );
 
-
-
-        window.addEventListener(
-            "resize",
-            () => this.onResize()
+    this.startButton =
+        document.getElementById(
+            "startButton"
         );
 
+    this.retryButton =
+        document.getElementById(
+            "retryButton"
+        );
 
+    this.titleButton =
+        document.getElementById(
+            "titleButton"
+        );
 
-        this.hideBossGauge();
+    this.scoreElement =
+        document.getElementById(
+            "score"
+        );
 
+    this.lifeElement =
+        document.getElementById(
+            "life"
+        );
 
+    this.highScoreElement =
+        document.getElementById(
+            "highScoreValue"
+        );
 
-        this.updateHighScore();
+    // =====================
+    // BOSS UI
+    // =====================
 
-    }
+    this.bossHp =
+        document.getElementById(
+            "bossHp"
+        );
+
+    this.bossGauge =
+        document.getElementById(
+            "bossGauge"
+        );
+
+    this.canvas =
+        document.getElementById(
+            "gameCanvas"
+        );
+
+    this.ctx =
+        this.canvas.getContext(
+            "2d"
+        );
+
+    this.resizeCanvas();
+
+    this.input =
+        new InputManager(
+            this.canvas
+        );
+
+    this.player =
+        new Player(
+            this.canvas,
+            this.input
+        );
+
+    this.audio =
+        new AudioManager();
+
+    this.scoreManager =
+        new ScoreManager();
+
+    // =====================
+    // Manager
+    // =====================
+
+    this.enemyManager =
+        new EnemyManager(
+            this.canvas
+        );
+
+    // =====================
+    // Object
+    // =====================
+
+    this.bullets = [];
+
+    this.explosions = [];
+
+    this.items = [];
+
+    this.boss = null;
+
+    this.enemyKillCount = 0;
+
+    this.bossSpawned = false;
+
+    // =====================
+    // Timer
+    // =====================
+
+    this.shootTimer = 0;
+
+    this.shootInterval = 0.25;
+
+    // =====================
+    // Status
+    // =====================
+
+    this.score = 0;
+
+    this.life = 3;
+
+    this.alive = true;
+
+    this.invincible = false;
+
+    this.invincibleTimer = 0;
+
+    this.lastTime = 0;
+
+    this.running = false;
+
+    this.startButton.addEventListener(
+        "click",
+        () => this.start()
+    );
+
+    this.retryButton.addEventListener(
+        "click",
+        () => this.start()
+    );
+
+    this.titleButton.addEventListener(
+        "click",
+        () => this.backToTitle()
+    );
+
+    window.addEventListener(
+        "resize",
+        () => this.onResize()
+    );
+
+    this.hideBossGauge();
+
+    this.updateHighScore();
+
+}
 
 
 
@@ -341,92 +276,65 @@ class Game {
 
 
 
-    start() {
+start() {
 
+    this.titleScreen.classList.add(
+        "hidden"
+    );
 
-        this.titleScreen.classList.add(
-            "hidden"
-        );
+    this.gameOver.classList.add(
+        "hidden"
+    );
 
+    this.gameContainer.classList.remove(
+        "hidden"
+    );
 
-        this.gameOver.classList.add(
-            "hidden"
-        );
+    this.score = 0;
 
+    this.life = 3;
 
-        this.gameContainer.classList.remove(
-            "hidden"
-        );
+    this.alive = true;
 
+    this.bullets = [];
 
+    this.enemyManager.reset();
 
-        this.score = 0;
+    this.explosions = [];
 
-        this.life = 3;
+    this.items = [];
 
-        this.alive = true;
+    this.boss = null;
 
+    this.enemyKillCount = 0;
 
+    this.bossSpawned = false;
 
-        this.bullets = [];
+    this.hideBossGauge();
 
-        this.enemies = [];
+    this.player.powerLevel = 1;
 
-        this.enemyBullets = [];
+    this.player.powerTimer = 0;
 
-        this.explosions = [];
+    this.player.resetPosition();
 
-        this.items = [];
+    this.invincible = false;
 
+    this.invincibleTimer = 0;
 
+    this.audio.playBGM();
 
-        this.boss = null;
+    this.lastTime =
+        performance.now();
 
-        this.enemyKillCount = 0;
+    this.running = true;
 
-        this.bossSpawned = false;
+    requestAnimationFrame(
+        (time) =>
+            this.loop(time)
+    );
 
-
-
-        this.hideBossGauge();
-
-
-
-        this.player.powerLevel = 1;
-
-        this.player.powerTimer = 0;
-
-
-
-        this.player.resetPosition();
-
-
-
-        this.invincible = false;
-
-        this.invincibleTimer = 0;
-
-
-
-        this.audio.playBGM();
-
-
-
-        this.lastTime =
-            performance.now();
-
-
-
-        this.running = true;
-
-
-
-        requestAnimationFrame(
-            (time) =>
-                this.loop(time)
-        );
-
-    }
+}
     loop(time) {
 
 
