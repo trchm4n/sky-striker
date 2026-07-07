@@ -14,50 +14,99 @@ class Game {
     constructor() {
 
 
+        // =====================
+        // 画面
+        // =====================
+
         this.titleScreen =
-            document.getElementById("titleScreen");
+            document.getElementById(
+                "titleScreen"
+            );
+
 
         this.gameContainer =
-            document.getElementById("gameContainer");
+            document.getElementById(
+                "gameContainer"
+            );
+
 
         this.gameOver =
-            document.getElementById("gameOver");
+            document.getElementById(
+                "gameOver"
+            );
 
+
+
+        // =====================
+        // ボタン
+        // =====================
 
         this.startButton =
-            document.getElementById("startButton");
+            document.getElementById(
+                "startButton"
+            );
+
 
         this.retryButton =
-            document.getElementById("retryButton");
+            document.getElementById(
+                "retryButton"
+            );
+
 
         this.titleButton =
-            document.getElementById("titleButton");
+            document.getElementById(
+                "titleButton"
+            );
 
+
+
+        // =====================
+        // HUD
+        // =====================
 
         this.scoreElement =
-            document.getElementById("score");
+            document.getElementById(
+                "score"
+            );
+
 
         this.lifeElement =
-            document.getElementById("life");
+            document.getElementById(
+                "life"
+            );
 
 
         this.highScoreElement =
-            document.getElementById("highScore");
+            document.getElementById(
+                "highScoreValue"
+            );
 
 
+
+        // =====================
+        // Canvas
+        // =====================
 
         this.canvas =
-            document.getElementById("gameCanvas");
+            document.getElementById(
+                "gameCanvas"
+            );
 
 
         this.ctx =
-            this.canvas.getContext("2d");
+            this.canvas.getContext(
+                "2d"
+            );
 
 
 
         this.resizeCanvas();
 
 
+
+        // =====================
+        // Manager
+        // =====================
 
         this.input =
             new InputManager(
@@ -81,6 +130,11 @@ class Game {
 
 
 
+
+        // =====================
+        // Object
+        // =====================
+
         this.bullets = [];
 
         this.enemies = [];
@@ -90,6 +144,11 @@ class Game {
         this.explosions = [];
 
 
+
+
+        // =====================
+        // Timer
+        // =====================
 
         this.shootTimer = 0;
 
@@ -106,6 +165,11 @@ class Game {
         this.enemyShootInterval = 1.0;
 
 
+
+
+        // =====================
+        // Status
+        // =====================
 
         this.score = 0;
 
@@ -127,16 +191,27 @@ class Game {
 
 
 
-        this.startButton.onclick =
-            () => this.start();
+
+        // =====================
+        // Event
+        // =====================
+
+        this.startButton.addEventListener(
+            "click",
+            () => this.start()
+        );
 
 
-        this.retryButton.onclick =
-            () => this.start();
+        this.retryButton.addEventListener(
+            "click",
+            () => this.start()
+        );
 
 
-        this.titleButton.onclick =
-            () => this.backToTitle();
+        this.titleButton.addEventListener(
+            "click",
+            () => this.backToTitle()
+        );
 
 
 
@@ -153,19 +228,26 @@ class Game {
 
 
 
+
+
     updateHighScore() {
 
 
-        if (!this.highScoreElement) {
+        if (
+            !this.highScoreElement
+        ) {
+
             return;
+
         }
 
 
         this.highScoreElement.textContent =
-            "BEST SCORE : " +
             this.scoreManager.getHighScore();
 
     }
+
+
 
 
 
@@ -188,15 +270,11 @@ class Game {
 
 
 
-        this.running = true;
-
-        this.alive = true;
-
-
-
         this.score = 0;
 
         this.life = 3;
+
+        this.alive = true;
 
 
 
@@ -225,8 +303,13 @@ class Game {
 
 
 
+        this.running = true;
+
+
+
         requestAnimationFrame(
-            (t) => this.loop(t)
+            (time) =>
+                this.loop(time)
         );
 
     }
@@ -234,10 +317,13 @@ class Game {
 
 
 
+
     loop(time) {
 
 
-        if (!this.running) {
+        if (
+            !this.running
+        ) {
 
             return;
 
@@ -246,8 +332,10 @@ class Game {
 
 
         const delta =
-            (time - this.lastTime)
-            / 1000;
+            (
+                time -
+                this.lastTime
+            ) / 1000;
 
 
 
@@ -263,19 +351,17 @@ class Game {
 
 
         requestAnimationFrame(
-            (t) => this.loop(t)
+            (t) =>
+                this.loop(t)
         );
 
     }
-
-
-
-
-
     update(delta) {
 
 
-        if (!this.alive) {
+        if (
+            !this.alive
+        ) {
 
             return;
 
@@ -283,11 +369,19 @@ class Game {
 
 
 
-        this.player.update(delta);
+        this.player.update(
+            delta
+        );
 
 
 
-        if (this.invincible) {
+        // =====================
+        // 無敵時間
+        // =====================
+
+        if (
+            this.invincible
+        ) {
 
 
             this.invincibleTimer -= delta;
@@ -306,6 +400,11 @@ class Game {
 
 
 
+
+        // =====================
+        // プレイヤーショット
+        // =====================
+
         this.shootTimer += delta;
 
 
@@ -319,10 +418,12 @@ class Game {
             this.shootTimer = 0;
 
 
+
             this.bullets.push(
                 new Bullet(
                     this.player.x +
                     this.player.width / 2,
+
                     this.player.y
                 )
             );
@@ -334,6 +435,11 @@ class Game {
 
 
 
+
+
+        // =====================
+        // 敵生成
+        // =====================
 
         this.enemyTimer += delta;
 
@@ -348,12 +454,14 @@ class Game {
             this.enemyTimer = 0;
 
 
+
             const x =
-                Math.random()
-                *
+                Math.random() *
                 (
-                    this.canvas.width - 40
+                    this.canvas.width -
+                    40
                 );
+
 
 
             this.enemies.push(
@@ -366,6 +474,12 @@ class Game {
         }
 
 
+
+
+
+        // =====================
+        // 敵攻撃
+        // =====================
 
         this.enemyShootTimer += delta;
 
@@ -380,8 +494,10 @@ class Game {
             this.enemyShootTimer = 0;
 
 
+
             this.enemies.forEach(
                 enemy => {
+
 
                     this.enemyBullets.push(
                         new EnemyBullet(
@@ -393,34 +509,50 @@ class Game {
                         )
                     );
 
+
                 }
             );
 
         }
+
+
+
+
+
         // =====================
-        // オブジェクト更新
+        // Update
         // =====================
 
         this.bullets.forEach(
-            b => b.update(delta)
+            bullet =>
+                bullet.update(delta)
         );
 
 
         this.enemies.forEach(
-            e => e.update(delta)
+            enemy =>
+                enemy.update(delta)
         );
 
 
         this.enemyBullets.forEach(
-            b => b.update(delta)
+            bullet =>
+                bullet.update(delta)
         );
 
 
         this.explosions.forEach(
-            e => e.update(delta)
+            explosion =>
+                explosion.update(delta)
         );
 
 
+
+
+
+        // =====================
+        // 削除
+        // =====================
 
         this.bullets =
             this.bullets.filter(
@@ -447,8 +579,10 @@ class Game {
 
 
 
+
+
         // =====================
-        // 弾 → 敵
+        // 弾と敵の判定
         // =====================
 
         for (
@@ -462,6 +596,7 @@ class Game {
                 this.enemies[i];
 
 
+
             for (
                 let j = this.bullets.length - 1;
                 j >= 0;
@@ -471,6 +606,7 @@ class Game {
 
                 const bullet =
                     this.bullets[j];
+
 
 
                 if (
@@ -502,6 +638,7 @@ class Game {
                     );
 
 
+
                     this.audio.explosion();
 
 
@@ -516,34 +653,38 @@ class Game {
 
 
 
+
         // =====================
-        // プレイヤーダメージ
+        // プレイヤー被弾
         // =====================
 
         const hitEnemy =
             this.enemies.some(
-                e =>
-                this.isHit(
-                    this.player,
-                    e
-                )
+                enemy =>
+                    this.isHit(
+                        this.player,
+                        enemy
+                    )
             );
 
 
         const hitBullet =
             this.enemyBullets.some(
-                b =>
-                this.isHit(
-                    this.player,
-                    b
-                )
+                bullet =>
+                    this.isHit(
+                        this.player,
+                        bullet
+                    )
             );
 
 
 
         if (
             !this.invincible &&
-            (hitEnemy || hitBullet)
+            (
+                hitEnemy ||
+                hitBullet
+            )
         ) {
 
 
@@ -551,6 +692,7 @@ class Game {
 
 
             this.audio.hit();
+
 
 
             this.invincible = true;
@@ -564,11 +706,15 @@ class Game {
                 this.life <= 0
             ) {
 
+
                 this.gameOverTrigger();
+
 
             }
 
         }
+
+
 
 
 
@@ -601,12 +747,16 @@ class Game {
 
 
 
+
+        // =====================
         // 無敵点滅
+        // =====================
 
         if (
             !this.invincible ||
             Math.floor(time / 100) % 2 === 0
         ) {
+
 
             this.player.draw(
                 this.ctx
@@ -616,23 +766,29 @@ class Game {
 
 
 
+
+
         this.bullets.forEach(
-            b => b.draw(this.ctx)
+            bullet =>
+                bullet.draw(this.ctx)
         );
 
 
         this.enemies.forEach(
-            e => e.draw(this.ctx)
+            enemy =>
+                enemy.draw(this.ctx)
         );
 
 
         this.enemyBullets.forEach(
-            b => b.draw(this.ctx)
+            bullet =>
+                bullet.draw(this.ctx)
         );
 
 
         this.explosions.forEach(
-            e => e.draw(this.ctx)
+            explosion =>
+                explosion.draw(this.ctx)
         );
 
     }
@@ -641,9 +797,28 @@ class Game {
 
 
 
-    // =====================
-    // GAME OVER
-    // =====================
+    isHit(a, b) {
+
+
+        return !(
+            a.x >
+            b.x + b.width ||
+
+            a.x + a.width <
+            b.x ||
+
+            a.y >
+            b.y + b.height ||
+
+            a.y + a.height <
+            b.y
+        );
+
+    }
+
+
+
+
 
     gameOverTrigger() {
 
@@ -689,18 +864,22 @@ class Game {
 
 
 
-        if (newRecord) {
+        if (
+            newRecord
+        ) {
 
 
-            const element =
+            const record =
                 document.getElementById(
                     "newRecord"
                 );
 
 
-            if (element) {
+            if (
+                record
+            ) {
 
-                element.textContent =
+                record.textContent =
                     "NEW RECORD!!";
 
             }
@@ -713,37 +892,6 @@ class Game {
 
 
 
-    // =====================
-    // Collision
-    // =====================
-
-    isHit(a, b) {
-
-
-        return !(
-            a.x >
-            b.x + b.width ||
-
-            a.x + a.width <
-            b.x ||
-
-            a.y >
-            b.y + b.height ||
-
-            a.y + a.height <
-            b.y
-        );
-
-    }
-
-
-
-
-
-    // =====================
-    // Resize
-    // =====================
-
     resizeCanvas() {
 
 
@@ -755,6 +903,8 @@ class Game {
             window.innerHeight;
 
     }
+
+
 
 
 
@@ -771,10 +921,6 @@ class Game {
 
 
 
-
-    // =====================
-    // TITLE
-    // =====================
 
     backToTitle() {
 
@@ -799,6 +945,7 @@ class Game {
         this.titleScreen.classList.remove(
             "hidden"
         );
+
 
 
         this.updateHighScore();
