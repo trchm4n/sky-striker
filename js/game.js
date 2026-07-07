@@ -88,7 +88,41 @@ class Game {
                 "bossGauge"
             );
 
-
+        // =====================
+        // STAGE CLEAR UI
+        // =====================
+        
+        this.stage = 1;
+        
+        
+        this.stageElement =
+            document.getElementById(
+                "stage"
+            );
+        
+        
+        this.stageClear =
+            document.getElementById(
+                "stageClear"
+            );
+        
+        
+        this.clearScore =
+            document.getElementById(
+                "clearScore"
+            );
+        
+        
+        this.nextStageButton =
+            document.getElementById(
+                "nextStageButton"
+            );
+        
+        
+        this.clearTitleButton =
+            document.getElementById(
+                "clearTitleButton"
+            );
 
 
 
@@ -227,7 +261,16 @@ class Game {
             () => this.backToTitle()
         );
 
-
+        this.nextStageButton.addEventListener(
+            "click",
+            () => this.nextStage()
+        );
+        
+        
+        this.clearTitleButton.addEventListener(
+            "click",
+            () => this.backToTitle()
+        );
 
         window.addEventListener(
             "resize",
@@ -366,7 +409,9 @@ class Game {
 
         this.alive = true;
 
-
+        this.stage = 1;
+        
+        this.updateStage();
 
         this.bullets = [];
 
@@ -999,9 +1044,12 @@ class Game {
 
 
             this.hideBossGauge();
-
-
+            
+            
             this.boss = null;
+            
+            
+            this.stageClearTrigger();
 
         }
 
@@ -1358,7 +1406,137 @@ class Game {
 
 
 
+stageClearTrigger() {
 
+
+    this.running = false;
+
+
+    this.audio.stopBGM();
+
+
+
+    if(
+        this.clearScore
+    ){
+
+        this.clearScore.textContent =
+            this.score;
+
+    }
+
+
+
+    this.gameContainer.classList.add(
+        "hidden"
+    );
+
+
+    this.stageClear.classList.remove(
+        "hidden"
+    );
+
+
+}
+
+
+
+
+
+nextStage() {
+
+
+    this.stage++;
+
+
+    this.stageClear.classList.add(
+        "hidden"
+    );
+
+
+    this.gameContainer.classList.remove(
+        "hidden"
+    );
+
+
+
+    this.bullets = [];
+
+    this.enemies = [];
+
+    this.enemyBullets = [];
+
+    this.explosions = [];
+
+    this.items = [];
+
+
+
+    this.boss = null;
+
+    this.enemyKillCount = 0;
+
+    this.bossSpawned = false;
+
+
+
+    // ステージが進むほど敵が増える
+
+    this.enemyInterval -= 0.1;
+
+
+    if(
+        this.enemyInterval < 0.5
+    ){
+
+        this.enemyInterval = 0.5;
+
+    }
+
+
+
+    this.updateStage();
+
+
+
+    this.audio.playBGM();
+
+
+
+    this.lastTime =
+        performance.now();
+
+
+
+    this.running = true;
+
+
+
+    requestAnimationFrame(
+        time =>
+            this.loop(time)
+    );
+
+}
+
+
+
+
+
+updateStage(){
+
+
+    if(
+        this.stageElement
+    ){
+
+        this.stageElement.textContent =
+            this.stage;
+
+    }
+
+
+}
 
     backToTitle() {
 
