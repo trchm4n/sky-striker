@@ -6,6 +6,7 @@ import EnemyBullet from "./entities/enemyBullet.js";
 import AudioManager from "./core/audio.js";
 import Explosion from "./effects/explosion.js";
 import ScoreManager from "./core/scoreManager.js";
+import Item from "./entities/item.js";
 
 
 class Game {
@@ -13,10 +14,6 @@ class Game {
 
     constructor() {
 
-
-        // =====================
-        // 画面
-        // =====================
 
         this.titleScreen =
             document.getElementById(
@@ -37,10 +34,6 @@ class Game {
 
 
 
-        // =====================
-        // ボタン
-        // =====================
-
         this.startButton =
             document.getElementById(
                 "startButton"
@@ -59,10 +52,6 @@ class Game {
             );
 
 
-
-        // =====================
-        // HUD
-        // =====================
 
         this.scoreElement =
             document.getElementById(
@@ -83,10 +72,6 @@ class Game {
 
 
 
-        // =====================
-        // Canvas
-        // =====================
-
         this.canvas =
             document.getElementById(
                 "gameCanvas"
@@ -99,14 +84,11 @@ class Game {
             );
 
 
+
         this.resizeCanvas();
 
 
 
-
-        // =====================
-        // Manager
-        // =====================
 
         this.input =
             new InputManager(
@@ -144,6 +126,8 @@ class Game {
 
         this.explosions = [];
 
+        this.items = [];
+
 
 
 
@@ -157,6 +141,7 @@ class Game {
         this.enemyTimer = 0;
 
         this.enemyShootTimer = 0;
+
 
 
 
@@ -195,9 +180,6 @@ class Game {
 
 
 
-        // =====================
-        // Event
-        // =====================
 
         this.startButton.addEventListener(
             "click",
@@ -289,6 +271,18 @@ class Game {
 
         this.explosions = [];
 
+        this.items = [];
+
+
+
+        this.player.powerLevel = 1;
+
+        this.player.powerTimer = 0;
+
+
+
+        this.player.resetPosition();
+
 
 
         this.invincible = false;
@@ -364,20 +358,16 @@ class Game {
 
 
 
-    // =====================
-    // 敵タイプ決定
-    // =====================
-
     getEnemyType() {
 
 
-        const random =
+        const r =
             Math.random();
 
 
 
         if (
-            random < 0.5
+            r < 0.5
         ) {
 
             return "normal";
@@ -386,7 +376,7 @@ class Game {
 
 
         if (
-            random < 0.75
+            r < 0.75
         ) {
 
             return "side";
@@ -395,7 +385,7 @@ class Game {
 
 
         if (
-            random < 0.9
+            r < 0.9
         ) {
 
             return "zigzag";
@@ -404,6 +394,40 @@ class Game {
 
 
         return "rush";
+
+    }
+
+
+
+
+
+    getItemType() {
+
+
+        const r =
+            Math.random();
+
+
+
+        if (
+            r < 0.4
+        ) {
+
+            return "heal";
+
+        }
+
+
+        if (
+            r < 0.75
+        ) {
+
+            return "power";
+
+        }
+
+
+        return "shield";
 
     }
     update(delta) {
@@ -419,9 +443,8 @@ class Game {
 
 
 
-        this.player.update(
-            delta
-        );
+        this.player.update(delta);
+
 
 
 
@@ -452,7 +475,7 @@ class Game {
 
 
         // =====================
-        // プレイヤー弾
+        // ショット
         // =====================
 
         this.shootTimer += delta;
@@ -469,13 +492,24 @@ class Game {
 
 
 
-            this.bullets.push(
-                new Bullet(
-                    this.player.x +
-                    this.player.width / 2,
+            const positions =
+                this.player.getShootPositions();
 
-                    this.player.y
-                )
+
+
+            positions.forEach(
+                pos => {
+
+
+                    this.bullets.push(
+                        new Bullet(
+                            pos.x,
+                            pos.y
+                        )
+                    );
+
+
+                }
             );
 
 
@@ -514,16 +548,11 @@ class Game {
 
 
 
-            const type =
-                this.getEnemyType();
-
-
-
             this.enemies.push(
                 new Enemy(
                     x,
                     -40,
-                    type
+                    this.getEnemyType()
                 )
             );
 
@@ -565,7 +594,6 @@ class Game {
                         )
                     );
 
-
                 }
             );
 
@@ -597,6 +625,12 @@ class Game {
         );
 
 
+        this.items.forEach(
+            item =>
+                item.update(delta)
+        );
+
+
         this.explosions.forEach(
             explosion =>
                 explosion.update(delta)
@@ -607,38 +641,7 @@ class Game {
 
 
         // =====================
-        // 削除
-        // =====================
-
-        this.bullets =
-            this.bullets.filter(
-                b => b.alive
-            );
-
-
-        this.enemies =
-            this.enemies.filter(
-                e => e.alive
-            );
-
-
-        this.enemyBullets =
-            this.enemyBullets.filter(
-                b => b.alive
-            );
-
-
-        this.explosions =
-            this.explosions.filter(
-                e => e.alive
-            );
-
-
-
-
-
-        // =====================
-        // 弾と敵
+        // 敵撃破判定
         // =====================
 
         for (
@@ -683,6 +686,29 @@ class Game {
 
 
 
+                    // =====================
+                    // アイテムドロップ
+                    // 10%
+                    // =====================
+
+                    if (
+                        Math.random() < 0.1
+                    ) {
+
+
+                        this.items.push(
+                            new Item(
+                                enemy.x,
+                                enemy.y,
+                                this.getItemType()
+                            )
+                        );
+
+                    }
+
+
+
+
                     this.explosions.push(
                         new Explosion(
                             enemy.x +
@@ -712,6 +738,82 @@ class Game {
 
 
         // =====================
+        // アイテム取得
+        // =====================
+
+        for (
+            const item of this.items
+        ) {
+
+
+            if (
+                this.isHit(
+                    this.player,
+                    item
+                )
+            ) {
+
+
+                item.alive = false;
+
+
+
+                switch(
+                    item.type
+                ) {
+
+
+
+                    case "heal":
+
+
+                        if (
+                            this.life < 3
+                        ) {
+
+                            this.life++;
+
+                        }
+
+
+                        break;
+
+
+
+
+                    case "power":
+
+
+                        this.player.powerUp();
+
+
+                        break;
+
+
+
+
+                    case "shield":
+
+
+                        this.invincible = true;
+
+
+                        this.invincibleTimer = 10;
+
+
+                        break;
+
+                }
+
+            }
+
+        }
+
+
+
+
+
+        // =====================
         // プレイヤー被弾
         // =====================
 
@@ -723,6 +825,7 @@ class Game {
                         enemy
                     )
             );
+
 
 
         const hitBullet =
@@ -771,6 +874,45 @@ class Game {
 
 
 
+
+
+        // =====================
+        // 削除
+        // =====================
+
+        this.bullets =
+            this.bullets.filter(
+                b => b.alive
+            );
+
+
+        this.enemies =
+            this.enemies.filter(
+                e => e.alive
+            );
+
+
+        this.enemyBullets =
+            this.enemyBullets.filter(
+                b => b.alive
+            );
+
+
+        this.items =
+            this.items.filter(
+                i => i.alive
+            );
+
+
+        this.explosions =
+            this.explosions.filter(
+                e => e.alive
+            );
+
+
+
+
+
         this.scoreElement.textContent =
             this.score;
 
@@ -805,6 +947,7 @@ class Game {
             Math.floor(time / 100) % 2 === 0
         ) {
 
+
             this.player.draw(
                 this.ctx
             );
@@ -828,6 +971,12 @@ class Game {
         this.enemyBullets.forEach(
             bullet =>
                 bullet.draw(this.ctx)
+        );
+
+
+        this.items.forEach(
+            item =>
+                item.draw(this.ctx)
         );
 
 
@@ -965,7 +1114,6 @@ class Game {
         this.titleScreen.classList.remove(
             "hidden"
         );
-
 
 
         this.updateHighScore();
