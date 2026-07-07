@@ -1,149 +1,489 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+    box-sizing:border-box;
+
 }
+
 
 html,
 body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #000;
-    color: white;
-    touch-action: none;
+
+    margin:0;
+
+    padding:0;
+
+    width:100%;
+
+    height:100%;
+
+    overflow:hidden;
+
+    background:#000;
+
+    font-family:sans-serif;
+
 }
+
+
+
+
+/* =====================
+   共通
+===================== */
+
 
 .hidden {
-    display: none !important;
+
+    display:none !important;
+
 }
 
-#titleScreen,
-#gameOver {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: radial-gradient(circle at top, #223, #000 70%);
-}
 
-h1 {
-    font-size: 64px;
-    color: #00d9ff;
-    text-shadow: 0 0 10px cyan, 0 0 20px cyan, 0 0 40px cyan;
-    margin-bottom: 20px;
-}
 
-.subtitle {
-    color: #ddd;
-    margin-bottom: 30px;
-    font-size: 18px;
-}
-
-.help {
-    margin-top: 30px;
-    background: rgba(255,255,255,.08);
-    padding: 20px;
-    border-radius: 12px;
-    max-width: 420px;
-}
-
-.help h2 {
-    margin-bottom: 12px;
-    color: #00d9ff;
-}
-
-.help ul {
-    margin-left: 20px;
-    line-height: 1.8;
-}
-
-.highscore {
-    margin-top: 30px;
-    font-size: 24px;
-    color: gold;
-}
 
 button {
-    cursor: pointer;
-    padding: 15px 40px;
-    font-size: 22px;
-    border: none;
-    border-radius: 12px;
-    background: #00d9ff;
-    color: #000;
-    font-weight: bold;
-    transition: .2s;
-    margin: 10px;
+
+    font-size:20px;
+
+    padding:12px 30px;
+
+    cursor:pointer;
+
 }
 
-button:hover {
-    transform: scale(1.08);
+
+
+
+/* =====================
+   タイトル画面
+===================== */
+
+
+#titleScreen {
+
+
+    position:absolute;
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    color:white;
+
+
+    background:
+        linear-gradient(
+            #020024,
+            #000
+        );
+
+
 }
 
-button:active {
-    transform: scale(.96);
+
+
+
+#titleScreen h1 {
+
+
+    font-size:48px;
+
+
+    margin-bottom:10px;
+
+
 }
+
+
+
+.subtitle {
+
+
+    font-size:18px;
+
+
+}
+
+
+
+
+.help {
+
+
+    margin-top:30px;
+
+
+    text-align:left;
+
+
+}
+
+
+
+.help h2 {
+
+
+    text-align:center;
+
+
+}
+
+
+
+
+.highscore {
+
+
+    margin-top:30px;
+
+
+    font-size:24px;
+
+
+}
+
+
+
+#highScoreValue {
+
+
+    margin-left:10px;
+
+
+    color:#ffff00;
+
+
+}
+
+
+
+
+
+/* =====================
+   Game
+===================== */
+
 
 #gameContainer {
-    position: absolute;
-    inset: 0;
+
+
+    position:absolute;
+
+
+    width:100%;
+
+
+    height:100%;
+
+
 }
 
-canvas {
-    width: 100vw;
-    height: 100vh;
-    display: block;
-    background: #000;
 
-    /* 🚨 追加（スマホ暴走防止） */
-    touch-action: none;
+
+#gameCanvas {
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    display:block;
+
+
 }
+
+
+
+
+
+/* =====================
+   HUD
+===================== */
+
 
 #hud {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 15px;
-    display: flex;
-    justify-content: space-around;
-    pointer-events: none;
-    font-weight: bold;
-    text-shadow: 0 0 8px black;
+
+
+    position:absolute;
+
+
+    top:10px;
+
+
+    left:10px;
+
+
+    color:white;
+
+
+    font-size:20px;
+
+
+    z-index:10;
+
+
 }
+
+
 
 .hudItem {
-    background: rgba(0,0,0,.4);
-    padding: 8px 14px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,.2);
+
+
+    margin-bottom:8px;
+
+
 }
+
+
+
+
+
+/* =====================
+   BOSS HP
+===================== */
+
+
+#bossHp {
+
+
+    position:fixed;
+
+
+    top:20px;
+
+
+    left:50%;
+
+
+    transform:
+        translateX(-50%);
+
+
+    width:70%;
+
+
+    max-width:600px;
+
+
+    text-align:center;
+
+
+    z-index:20;
+
+
+}
+
+
+
+
+
+#bossTitle {
+
+
+    color:white;
+
+
+    font-size:26px;
+
+
+    font-weight:bold;
+
+
+    letter-spacing:4px;
+
+
+    margin-bottom:8px;
+
+
+    text-shadow:
+        0 0 10px red;
+
+
+}
+
+
+
+
+
+#bossGaugeOuter {
+
+
+    width:100%;
+
+
+    height:22px;
+
+
+    background:#222;
+
+
+    border:2px solid white;
+
+
+    overflow:hidden;
+
+
+}
+
+
+
+
+
+#bossGauge {
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    background:red;
+
+
+    transition:
+        width 0.2s linear;
+
+
+}
+
+
+
+
+
+/* =====================
+   GAME OVER
+===================== */
+
+
+#gameOver {
+
+
+    position:absolute;
+
+
+    width:100%;
+
+
+    height:100%;
+
+
+    display:flex;
+
+
+    flex-direction:column;
+
+
+    justify-content:center;
+
+
+    align-items:center;
+
+
+    color:white;
+
+
+    background:
+        rgba(
+            0,
+            0,
+            0,
+            0.8
+        );
+
+
+}
+
+
+
+
 
 .finalScore {
-    font-size: 32px;
-    margin: 30px;
+
+
+    font-size:30px;
+
+
+    margin:30px;
+
+
 }
 
-@media (max-width: 768px) {
 
-    h1 { font-size: 42px; }
 
-    button {
-        width: 260px;
-        font-size: 20px;
+
+/* =====================
+   Smartphone
+===================== */
+
+
+@media screen and (max-width:600px) {
+
+
+    #titleScreen h1 {
+
+
+        font-size:36px;
+
+
     }
+
+
 
     .help {
-        width: 90%;
-        font-size: 15px;
+
+
+        font-size:14px;
+
+
     }
 
-    #hud {
-        font-size: 15px;
-        padding: 10px;
+
+
+    #bossHp {
+
+
+        width:85%;
+
+
     }
+
+
+
+    #bossTitle {
+
+
+        font-size:20px;
+
+
+    }
+
+
+
+    #bossGaugeOuter {
+
+
+        height:16px;
+
+
+    }
+
+
 }
