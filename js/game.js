@@ -73,6 +73,25 @@ class Game {
 
 
 
+        // =====================
+        // BOSS UI
+        // =====================
+
+        this.bossHp =
+            document.getElementById(
+                "bossHp"
+            );
+
+
+        this.bossGauge =
+            document.getElementById(
+                "bossGauge"
+            );
+
+
+
+
+
         this.canvas =
             document.getElementById(
                 "gameCanvas"
@@ -131,8 +150,6 @@ class Game {
         this.items = [];
 
 
-
-        // Boss
 
         this.boss = null;
 
@@ -219,7 +236,83 @@ class Game {
 
 
 
+        this.hideBossGauge();
+
+
+
         this.updateHighScore();
+
+    }
+
+
+
+
+
+    hideBossGauge() {
+
+
+        if (
+            this.bossHp
+        ) {
+
+
+            this.bossHp.classList.add(
+                "hidden"
+            );
+
+        }
+
+    }
+
+
+
+
+
+    showBossGauge() {
+
+
+        if (
+            this.bossHp
+        ) {
+
+
+            this.bossHp.classList.remove(
+                "hidden"
+            );
+
+        }
+
+    }
+
+
+
+
+
+    updateBossGauge() {
+
+
+        if (
+            !this.boss ||
+            !this.bossGauge
+        ) {
+
+            return;
+
+        }
+
+
+
+        const rate =
+            this.boss.getHpRate();
+
+
+
+        this.bossGauge.style.width =
+            (
+                rate * 100
+            )
+            + "%";
+
 
     }
 
@@ -295,6 +388,10 @@ class Game {
 
 
 
+        this.hideBossGauge();
+
+
+
         this.player.powerLevel = 1;
 
         this.player.powerTimer = 0;
@@ -330,11 +427,6 @@ class Game {
         );
 
     }
-
-
-
-
-
     loop(time) {
 
 
@@ -450,6 +542,11 @@ class Game {
         return "shield";
 
     }
+
+
+
+
+
     update(delta) {
 
 
@@ -470,7 +567,7 @@ class Game {
 
 
         // =====================
-        // 無敵時間
+        // 無敵
         // =====================
 
         if (
@@ -479,7 +576,6 @@ class Game {
 
 
             this.invincibleTimer -= delta;
-
 
 
             if (
@@ -497,7 +593,7 @@ class Game {
 
 
         // =====================
-        // プレイヤーショット
+        // 自動射撃
         // =====================
 
         this.shootTimer += delta;
@@ -543,7 +639,6 @@ class Game {
 
         // =====================
         // 敵生成
-        // ボス中は停止
         // =====================
 
         if (
@@ -633,7 +728,7 @@ class Game {
 
 
         // =====================
-        // ボス更新
+        // ボス処理
         // =====================
 
         if (
@@ -644,6 +739,10 @@ class Game {
 
             const attack =
                 this.boss.update(delta);
+
+
+
+            this.updateBossGauge();
 
 
 
@@ -673,7 +772,7 @@ class Game {
 
 
         // =====================
-        // Object更新
+        // 更新
         // =====================
 
         this.bullets.forEach(
@@ -759,10 +858,6 @@ class Game {
 
 
 
-                    // =====================
-                    // ボス出現
-                    // =====================
-
                     if (
                         this.enemyKillCount >= 30 &&
                         !this.bossSpawned
@@ -778,12 +873,14 @@ class Game {
                         this.bossSpawned = true;
 
 
+                        this.showBossGauge();
+
+
+                        this.updateBossGauge();
+
                     }
 
 
-
-
-                    // アイテムドロップ
 
                     if (
                         Math.random() < 0.1
@@ -802,7 +899,6 @@ class Game {
 
 
 
-
                     this.explosions.push(
                         new Explosion(
                             enemy.x +
@@ -812,6 +908,7 @@ class Game {
                             enemy.height / 2
                         )
                     );
+
 
 
                     this.audio.explosion();
@@ -840,34 +937,30 @@ class Game {
         ) {
 
 
-            for (
-                const bullet of this.bullets
-            ) {
+            this.bullets.forEach(
+                bullet => {
 
 
-                if (
-                    this.isHit(
-                        this.boss,
-                        bullet
-                    )
-                ) {
+                    if (
+                        this.isHit(
+                            this.boss,
+                            bullet
+                        )
+                    ) {
 
 
-                    bullet.alive = false;
+                        bullet.alive = false;
 
 
-                    this.boss.hit(
-                        50
-                    );
+                        this.boss.hit(
+                            50
+                        );
 
 
-                    this.score += 10;
-
+                    }
 
                 }
-
-            }
-
+            );
 
         }
 
@@ -905,6 +998,9 @@ class Game {
 
 
 
+            this.hideBossGauge();
+
+
             this.boss = null;
 
         }
@@ -917,29 +1013,26 @@ class Game {
         // アイテム取得
         // =====================
 
-        for (
-            const item of this.items
-        ) {
+        this.items.forEach(
+            item => {
 
 
-            if (
-                this.isHit(
-                    this.player,
-                    item
-                )
-            ) {
-
-
-                item.alive = false;
-
-
-
-                switch(
-                    item.type
+                if (
+                    this.isHit(
+                        this.player,
+                        item
+                    )
                 ) {
 
 
-                    case "heal":
+                    item.alive = false;
+
+
+
+                    if (
+                        item.type === "heal"
+                    ) {
+
 
                         if (
                             this.life < 3
@@ -949,38 +1042,42 @@ class Game {
 
                         }
 
-                        break;
+
+                    }
 
 
-
-                    case "power":
+                    if (
+                        item.type === "power"
+                    ) {
 
                         this.player.powerUp();
 
-                        break;
+                    }
 
 
+                    if (
+                        item.type === "shield"
+                    ) {
 
-                    case "shield":
 
                         this.invincible = true;
 
                         this.invincibleTimer = 10;
 
-                        break;
+                    }
+
 
                 }
 
             }
-
-        }
+        );
 
 
 
 
 
         // =====================
-        // プレイヤー被弾
+        // 被弾
         // =====================
 
         const hitEnemy =
@@ -1041,10 +1138,6 @@ class Game {
 
 
 
-
-        // =====================
-        // 削除
-        // =====================
 
         this.bullets =
             this.bullets.filter(
@@ -1153,6 +1246,7 @@ class Game {
             );
 
         }
+
 
 
         this.explosions.forEach(
@@ -1291,11 +1385,16 @@ class Game {
         );
 
 
+        this.hideBossGauge();
+
+
         this.updateHighScore();
 
     }
 
 }
+
+
 
 
 
