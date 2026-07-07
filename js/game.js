@@ -99,8 +99,8 @@ class Game {
             );
 
 
-
         this.resizeCanvas();
+
 
 
 
@@ -131,6 +131,7 @@ class Game {
 
 
 
+
         // =====================
         // Object
         // =====================
@@ -142,6 +143,7 @@ class Game {
         this.enemyBullets = [];
 
         this.explosions = [];
+
 
 
 
@@ -163,6 +165,7 @@ class Game {
         this.enemyInterval = 1.2;
 
         this.enemyShootInterval = 1.0;
+
 
 
 
@@ -356,6 +359,53 @@ class Game {
         );
 
     }
+
+
+
+
+
+    // =====================
+    // 敵タイプ決定
+    // =====================
+
+    getEnemyType() {
+
+
+        const random =
+            Math.random();
+
+
+
+        if (
+            random < 0.5
+        ) {
+
+            return "normal";
+
+        }
+
+
+        if (
+            random < 0.75
+        ) {
+
+            return "side";
+
+        }
+
+
+        if (
+            random < 0.9
+        ) {
+
+            return "zigzag";
+
+        }
+
+
+        return "rush";
+
+    }
     update(delta) {
 
 
@@ -402,7 +452,7 @@ class Game {
 
 
         // =====================
-        // プレイヤーショット
+        // プレイヤー弾
         // =====================
 
         this.shootTimer += delta;
@@ -464,10 +514,16 @@ class Game {
 
 
 
+            const type =
+                this.getEnemyType();
+
+
+
             this.enemies.push(
                 new Enemy(
                     x,
-                    -40
+                    -40,
+                    type
                 )
             );
 
@@ -520,7 +576,7 @@ class Game {
 
 
         // =====================
-        // Update
+        // 更新
         // =====================
 
         this.bullets.forEach(
@@ -582,7 +638,7 @@ class Game {
 
 
         // =====================
-        // 弾と敵の判定
+        // 弾と敵
         // =====================
 
         for (
@@ -640,6 +696,7 @@ class Game {
 
 
                     this.audio.explosion();
+
 
 
                     break;
@@ -706,15 +763,11 @@ class Game {
                 this.life <= 0
             ) {
 
-
                 this.gameOverTrigger();
-
 
             }
 
         }
-
-
 
 
 
@@ -747,24 +800,16 @@ class Game {
 
 
 
-
-        // =====================
-        // 無敵点滅
-        // =====================
-
         if (
             !this.invincible ||
             Math.floor(time / 100) % 2 === 0
         ) {
-
 
             this.player.draw(
                 this.ctx
             );
 
         }
-
-
 
 
 
@@ -833,10 +878,9 @@ class Game {
 
 
 
-        const newRecord =
-            this.scoreManager.saveScore(
-                this.score
-            );
+        this.scoreManager.saveScore(
+            this.score
+        );
 
 
 
@@ -861,30 +905,6 @@ class Game {
 
 
         this.updateHighScore();
-
-
-
-        if (
-            newRecord
-        ) {
-
-
-            const record =
-                document.getElementById(
-                    "newRecord"
-                );
-
-
-            if (
-                record
-            ) {
-
-                record.textContent =
-                    "NEW RECORD!!";
-
-            }
-
-        }
 
     }
 
