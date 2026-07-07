@@ -1,106 +1,275 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
+
     <meta charset="UTF-8">
+
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
+
     <title>SKY STRIKER</title>
 
+
     <link rel="stylesheet" href="style.css">
+
 </head>
+
+
 <body>
 
-<!-- タイトル画面 -->
+
+
+<!-- =====================
+     タイトル画面
+===================== -->
+
 <div id="titleScreen">
 
-    <h1>SKY STRIKER</h1>
+
+    <h1>
+        SKY STRIKER
+    </h1>
+
+
 
     <p class="subtitle">
+
         Touch / WASD / Arrow Keys
+
     </p>
 
+
+
     <button id="startButton">
+
         GAME START
+
     </button>
+
+
+
 
     <div class="help">
 
-        <h2>遊び方</h2>
+
+        <h2>
+            遊び方
+        </h2>
+
+
 
         <ul>
-            <li>スマホ：ドラッグで移動</li>
-            <li>PC：矢印キー または WASD</li>
-            <li>ショットは自動発射</li>
-            <li>敵を倒してハイスコアを目指そう！</li>
+
+            <li>
+                スマホ：ドラッグで移動
+            </li>
+
+
+            <li>
+                PC：矢印キー または WASD
+            </li>
+
+
+            <li>
+                ショットは自動発射
+            </li>
+
+
+            <li>
+                敵を倒してハイスコアを目指そう！
+            </li>
+
+
         </ul>
 
+
     </div>
+
+
+
+
 
     <div class="highscore">
 
+
         HIGH SCORE
 
+
         <span id="highScoreValue">
+
             0
+
         </span>
+
 
     </div>
 
+
+
 </div>
 
-<!-- ゲーム画面 -->
+
+
+
+
+<!-- =====================
+     ゲーム画面
+===================== -->
+
+
 <div id="gameContainer" class="hidden">
+
 
     <canvas id="gameCanvas"></canvas>
 
+
+
     <div id="hud">
 
+
         <div class="hudItem">
+
             SCORE
-            <span id="score">0</span>
+
+            <span id="score">
+                0
+            </span>
+
         </div>
 
+
+
         <div class="hudItem">
+
             LIFE
-            <span id="life">3</span>
+
+            <span id="life">
+                3
+            </span>
+
         </div>
 
+
+
         <div class="hudItem">
+
             STAGE
-            <span id="stage">1</span>
+
+            <span id="stage">
+                1
+            </span>
+
         </div>
+
+
+
+        <!-- =====================
+             BOSS HP
+        ====================== -->
+
+
+        <div id="bossHp" class="hidden">
+
+
+            <div id="bossTitle">
+
+                BOSS
+
+            </div>
+
+
+
+            <div id="bossGaugeOuter">
+
+
+                <div id="bossGauge">
+
+
+                </div>
+
+
+            </div>
+
+
+
+        </div>
+
+
 
     </div>
 
+
+
 </div>
 
-<!-- ゲームオーバー -->
+
+
+
+
+
+<!-- =====================
+     GAME OVER
+===================== -->
+
+
 <div id="gameOver" class="hidden">
 
-    <h1>GAME OVER</h1>
+
+    <h1>
+
+        GAME OVER
+
+    </h1>
+
+
 
     <div class="finalScore">
 
+
         SCORE
 
+
         <span id="finalScore">
+
             0
+
         </span>
+
 
     </div>
 
+
+
+
     <button id="retryButton">
+
         RETRY
+
     </button>
 
+
+
+
     <button id="titleButton">
+
         TITLE
+
     </button>
+
+
 
 </div>
 
+
+
+
+
 <script type="module" src="js/game.js"></script>
 
+
 </body>
+
 </html>
