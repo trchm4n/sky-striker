@@ -251,10 +251,10 @@ export default class AudioManager {
         const oscillator = this.context.createOscillator();
         const gain = this.context.createGain();
 
-        oscillator.type = "sine";
+        oscillator.type = "triangle";
         oscillator.frequency.setValueAtTime(660, this.context.currentTime);
         oscillator.frequency.exponentialRampToValueAtTime(1320, this.context.currentTime + .12);
-        gain.gain.setValueAtTime(.12, this.context.currentTime);
+        gain.gain.setValueAtTime(.28, this.context.currentTime);
         gain.gain.exponentialRampToValueAtTime(.001, this.context.currentTime + .18);
 
         oscillator.connect(gain);
