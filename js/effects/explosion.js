@@ -4,14 +4,14 @@ import Particle from "../entities/particle.js";
 export default class Explosion {
 
 
-    constructor(x, y) {
+    constructor(x, y, scale = 1) {
 
         this.particles = [];
 
 
         for (
             let i = 0;
-            i < 25;
+            i < 25 * scale;
             i++
         ) {
 

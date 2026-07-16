@@ -391,8 +391,9 @@ export default class Player {
         // 宇宙船
         // =====================
 
-        ctx.fillStyle =
-            "#00aaff";
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "#31dfff";
+        ctx.fillStyle = "#168ee8";
 
 
         ctx.beginPath();
@@ -421,6 +422,15 @@ export default class Player {
 
         ctx.fill();
 
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#d9fbff";
+        ctx.beginPath();
+        ctx.moveTo(this.width / 2, 13);
+        ctx.lineTo(this.width / 2 - 9, 42);
+        ctx.lineTo(this.width / 2 + 9, 42);
+        ctx.closePath();
+        ctx.fill();
+
 
 
 
@@ -429,8 +439,9 @@ export default class Player {
         // ブースター
         // =====================
 
-        ctx.fillStyle =
-            "#ff8800";
+        ctx.shadowBlur = 16;
+        ctx.shadowColor = "#ff851b";
+        ctx.fillStyle = "#ffb329";
 
 
         ctx.beginPath();

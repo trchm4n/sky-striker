@@ -1,30 +1,10 @@
 export default class EnemyBullet {
-
-    constructor(x, y) {
-
-        this.x = x;
-        this.y = y;
-
-        this.width = 4;
-        this.height = 10;
-
-        this.speed = 250;
-
-        this.alive = true;
+    constructor(x, y, target = null, speed = 260, angle = null) {
+        this.x = x - 4; this.y = y; this.width = 8; this.height = 14; this.speed = speed; this.alive = true;
+        const targetAngle = target ? Math.atan2(target.y + target.height / 2 - y, target.x + target.width / 2 - x) : Math.PI / 2;
+        const direction = angle ?? targetAngle;
+        this.vx = Math.cos(direction) * this.speed; this.vy = Math.sin(direction) * this.speed;
     }
-
-    update(delta) {
-
-        this.y += this.speed * delta;
-
-        if (this.y > window.innerHeight + 50) {
-            this.alive = false;
-        }
-    }
-
-    draw(ctx) {
-
-        ctx.fillStyle = "#ff4dff";
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
+    update(delta) { this.x += this.vx * delta; this.y += this.vy * delta; if (this.y > window.innerHeight + 60 || this.x < -60 || this.x > window.innerWidth + 60) this.alive = false; }
+    draw(ctx) { ctx.save(); ctx.translate(this.x + this.width / 2, this.y + this.height / 2); ctx.rotate(Math.atan2(this.vy, this.vx) + Math.PI / 2); ctx.shadowBlur = 12; ctx.shadowColor = "#ff3f80"; ctx.fillStyle = "#ff5c9c"; ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height); ctx.restore(); }
 }

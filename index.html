@@ -1,259 +1,60 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-    >
-
-    <title>
-        SKY STRIKER
-    </title>
-
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>SKY STRIKER</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+  <main id="titleScreen" class="screen">
+    <p class="eyebrow">NEON DEFENSE FORCE // 2089</p>
+    <h1>SKY <span>STRIKER</span></h1>
+    <p class="subtitle">空を切り裂け。最後の防衛ラインを死守せよ。</p>
+    <button id="startButton" class="primaryButton">GAME START <small>▶</small></button>
+    <section class="help" aria-label="操作方法">
+      <h2>CONTROLS</h2>
+      <div class="controlGrid">
+        <p><kbd>WASD</kbd> / <kbd>↑↓←→</kbd><span>移動</span></p>
+        <p><kbd>TOUCH</kbd><span>画面をなぞって移動</span></p>
+        <p><kbd>P</kbd><span>ポーズ</span></p>
+      </div>
+      <p class="autoFire">ショットはオート連射。アイテムで機体を強化できます。</p>
+    </section>
+    <p class="highscore">HIGH SCORE <strong id="highScoreValue">0</strong></p>
+  </main>
 
-<!-- =====================
-     タイトル画面
-===================== -->
-
-<div id="titleScreen">
-
-    <h1>
-
-        SKY STRIKER
-
-    </h1>
-
-    <p class="subtitle">
-
-        Touch / WASD / Arrow Keys
-
-    </p>
-
-    <button id="startButton">
-
-        GAME START
-
-    </button>
-
-    <div class="help">
-
-        <h2>
-
-            遊び方
-
-        </h2>
-
-        <ul>
-
-            <li>
-                スマホ：ドラッグで移動
-            </li>
-
-            <li>
-                PC：矢印キー または WASD
-            </li>
-
-            <li>
-                ショットは自動発射
-            </li>
-
-            <li>
-                敵を倒してハイスコアを目指そう！
-            </li>
-
-        </ul>
-
-    </div>
-
-    <div class="highscore">
-
-        HIGH SCORE
-
-        <span id="highScoreValue">
-
-            0
-
-        </span>
-
-    </div>
-
-</div>
-
-<!-- =====================
-     ゲーム画面
-===================== -->
-
-<div
-    id="gameContainer"
-    class="hidden"
->
-
-    <canvas id="gameCanvas"></canvas>
-
+  <div id="gameContainer" class="hidden">
+    <canvas id="gameCanvas" aria-label="Sky Striker game screen"></canvas>
     <div id="hud">
-
-        <div class="hudItem">
-
-            SCORE
-
-            <span id="score">
-
-                0
-
-            </span>
-
-        </div>
-
-        <div class="hudItem">
-
-            LIFE
-
-            <span id="life">
-
-                3
-
-            </span>
-
-        </div>
-
-        <div class="hudItem">
-
-            STAGE
-
-            <span id="stage">
-
-                1
-
-            </span>
-
-        </div>
-
-        <!-- =====================
-             BOSS HP
-        ====================== -->
-
-        <div
-            id="bossHp"
-            class="hidden"
-        >
-
-            <div id="bossTitle">
-
-                BOSS
-
-            </div>
-
-            <div id="bossGaugeOuter">
-
-                <div id="bossGauge"></div>
-
-            </div>
-
-        </div>
-
+      <div class="hudItem"><span class="hudLabel">SCORE</span><strong id="score">0</strong></div>
+      <div class="hudItem"><span class="hudLabel">LIFE</span><strong id="life">3</strong></div>
+      <div class="hudItem"><span class="hudLabel">STAGE</span><strong id="stage">1</strong></div>
     </div>
-
-</div>
-
-<!-- =====================
-     STAGE CLEAR
-===================== -->
-
-<div
-    id="stageClear"
-    class="hidden"
->
-
-    <h1>
-
-        STAGE CLEAR
-
-    </h1>
-
-    <div class="finalScore">
-
-        SCORE
-
-        <span id="clearScore">
-
-            0
-
-        </span>
-
+    <div id="combo" class="hidden"><span id="comboCount">0</span> COMBO</div>
+    <button id="pauseButton" class="iconButton" aria-label="ポーズ">Ⅱ</button>
+    <div id="bossHp" class="hidden">
+      <div id="bossTitle">DREADNOUGHT // HP</div>
+      <div id="bossGaugeOuter"><div id="bossGauge"></div></div>
     </div>
+    <div id="pauseOverlay" class="hidden"><p>PAUSED</p><small>P キーまたはボタンで再開</small></div>
+  </div>
 
-    <button id="nextStageButton">
+  <section id="stageClear" class="screen hidden">
+    <p class="eyebrow">SECTOR SECURED</p>
+    <h1>STAGE CLEAR</h1>
+    <p class="finalScore">SCORE <strong id="clearScore">0</strong></p>
+    <button id="nextStageButton" class="primaryButton green">NEXT STAGE <small>▶</small></button>
+    <button id="clearTitleButton" class="textButton">TITLE SCREEN</button>
+  </section>
 
-        NEXT STAGE
-
-    </button>
-
-    <button id="clearTitleButton">
-
-        TITLE
-
-    </button>
-
-</div>
-
-<!-- =====================
-     GAME OVER
-===================== -->
-
-<div
-    id="gameOver"
-    class="hidden"
->
-
-    <h1>
-
-        GAME OVER
-
-    </h1>
-
-    <div class="finalScore">
-
-        SCORE
-
-        <span id="finalScore">
-
-            0
-
-        </span>
-
-    </div>
-
-    <button id="retryButton">
-
-        RETRY
-
-    </button>
-
-    <button id="titleButton">
-
-        TITLE
-
-    </button>
-
-</div>
-
-<script
-    type="module"
-    src="js/game.js"
-></script>
-
+  <section id="gameOver" class="screen hidden">
+    <p class="eyebrow danger">MISSION FAILED</p>
+    <h1>GAME OVER</h1>
+    <p class="finalScore">SCORE <strong id="finalScore">0</strong></p>
+    <button id="retryButton" class="primaryButton">RETRY <small>↻</small></button>
+    <button id="titleButton" class="textButton">TITLE SCREEN</button>
+  </section>
+  <script type="module" src="js/game.js"></script>
 </body>
-
 </html>

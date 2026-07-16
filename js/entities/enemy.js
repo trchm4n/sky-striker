@@ -271,12 +271,18 @@ export default class Enemy {
 
 
 
-        ctx.fillRect(
-            0,
-            0,
-            this.width,
-            this.height
-        );
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.beginPath();
+        ctx.moveTo(this.width / 2, this.height);
+        ctx.lineTo(0, 8);
+        ctx.lineTo(this.width / 2, 0);
+        ctx.lineTo(this.width, 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(235,255,255,.82)";
+        ctx.fillRect(this.width / 2 - 4, 11, 8, 13);
 
 
 
