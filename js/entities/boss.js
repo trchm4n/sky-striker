@@ -1,23 +1,10 @@
 export default class Boss {
     constructor(canvas, stage = 1) {
-        this.canvas = canvas; this.width = 180; this.height = 92; this.x = canvas.width / 2 - this.width / 2; this.y = 94;
-        this.maxHp = 3600 + stage * 900; this.hp = this.maxHp; this.alive = true; this.speed = 105 + stage * 12; this.direction = 1; this.attackTimer = 0; this.attackInterval = Math.max(.46, .9 - stage * .04); this.phase = 1; this.time = 0;
+        this.canvas = canvas; this.stage = stage; this.width = stage === 3 ? 220 : 180; this.height = stage === 2 ? 108 : 92; this.x = canvas.width / 2 - this.width / 2; this.y = 94;
+        this.maxHp = 3600 + stage * 1200; this.hp = this.maxHp; this.alive = true; this.speed = 105 + stage * 20; this.direction = 1; this.attackTimer = 0; this.attackInterval = Math.max(.42, .92 - stage * .08); this.phase = 1;
     }
-    update(delta, player) {
-        this.time += delta; this.x += this.speed * this.direction * delta;
-        if (this.x <= 0 || this.x + this.width >= this.canvas.width) { this.x = Math.max(0, Math.min(this.canvas.width - this.width, this.x)); this.direction *= -1; }
-        if (this.hp < this.maxHp * .48) { this.phase = 2; this.speed = 180; }
-        this.attackTimer += delta; if (this.attackTimer < this.attackInterval) return [];
-        this.attackTimer = 0; const centerX = this.x + this.width / 2; const originY = this.y + this.height - 5;
-        if (this.phase === 1) return [{ x: centerX, y: originY, speed: 290 }];
-        const aim = Math.atan2(player.y + player.height / 2 - originY, player.x + player.width / 2 - centerX);
-        return [-.32, 0, .32].map(offset => ({ x: centerX, y: originY, speed: 310, angle: aim + offset }));
-    }
-    draw(ctx) {
-        ctx.save(); ctx.translate(this.x, this.y); ctx.shadowBlur = 22; ctx.shadowColor = this.phase === 1 ? "#a84cff" : "#ff3159";
-        ctx.fillStyle = this.phase === 1 ? "#7029bb" : "#c21942"; ctx.beginPath(); ctx.moveTo(this.width / 2, 0); ctx.lineTo(this.width, 38); ctx.lineTo(this.width - 18, this.height); ctx.lineTo(18, this.height); ctx.lineTo(0, 38); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = "#1c103a"; ctx.fillRect(22, 42, this.width - 44, 30); ctx.fillStyle = "#eaffff"; ctx.beginPath(); ctx.arc(this.width / 2, 51, 16, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = this.phase === 1 ? "#8b2fff" : "#ff294e"; ctx.beginPath(); ctx.arc(this.width / 2, 51, 8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
+    update(delta, player) { this.x += this.speed * this.direction * delta; if (this.x <= 0 || this.x + this.width >= this.canvas.width) { this.x = Math.max(0, Math.min(this.canvas.width - this.width, this.x)); this.direction *= -1; } if (this.hp < this.maxHp * .48) { this.phase = 2; this.speed = 175 + this.stage * 15; } this.attackTimer += delta; if (this.attackTimer < this.attackInterval) return []; this.attackTimer = 0; const x = this.x + this.width / 2; const y = this.y + this.height - 5; const aim = Math.atan2(player.y + player.height / 2 - y, player.x + player.width / 2 - x); const spreads = this.stage === 1 ? (this.phase === 1 ? [0] : [-.32, 0, .32]) : this.stage === 2 ? (this.phase === 1 ? [-.18, .18] : [-.4, -.13, .13, .4]) : (this.phase === 1 ? [-.28, 0, .28] : [-.52, -.26, 0, .26, .52]); return spreads.map(offset => ({ x, y, speed: 275 + this.stage * 25, angle: aim + offset })); }
+    draw(ctx) { const colors = this.stage === 1 ? ["#7029bb", "#8b2fff"] : this.stage === 2 ? ["#0b9db3", "#50edff"] : ["#bd7220", "#ffcf58"]; const body = this.phase === 2 ? "#d3264f" : colors[0]; ctx.save(); ctx.translate(this.x, this.y); ctx.shadowBlur = 22; ctx.shadowColor = this.phase === 2 ? "#ff3159" : colors[1]; ctx.fillStyle = body; ctx.beginPath(); ctx.moveTo(this.width / 2, 0); ctx.lineTo(this.width, 38); ctx.lineTo(this.width - 18, this.height); ctx.lineTo(18, this.height); ctx.lineTo(0, 38); ctx.closePath(); ctx.fill(); ctx.fillStyle = "#101931"; ctx.fillRect(22, 42, this.width - 44, 30); ctx.fillStyle = "#eaffff"; ctx.beginPath(); ctx.arc(this.width / 2, 52, 16, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = colors[1]; ctx.beginPath(); ctx.arc(this.width / 2, 52, 8, 0, Math.PI * 2); ctx.fill(); if (this.stage === 3) { ctx.fillStyle = colors[1]; ctx.fillRect(8, 68, 26, 12); ctx.fillRect(this.width - 34, 68, 26, 12); } ctx.restore(); }
     hit(damage) { this.hp = Math.max(0, this.hp - damage); if (this.hp === 0) this.alive = false; }
     getHpRate() { return this.hp / this.maxHp; }
 }

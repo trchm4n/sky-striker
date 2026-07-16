@@ -62,6 +62,8 @@ export default class Player {
 
     update(delta) {
 
+        const moveSpeed = this.input.stickActive ? 230 : this.speed;
+
 
         // =====================
         // 移動
@@ -72,7 +74,7 @@ export default class Player {
         ) {
 
             this.x -=
-                this.speed *
+                moveSpeed *
                 delta;
 
         }
@@ -83,7 +85,7 @@ export default class Player {
         ) {
 
             this.x +=
-                this.speed *
+                moveSpeed *
                 delta;
 
         }
@@ -94,7 +96,7 @@ export default class Player {
         ) {
 
             this.y -=
-                this.speed *
+                moveSpeed *
                 delta;
 
         }
@@ -105,7 +107,7 @@ export default class Player {
         ) {
 
             this.y +=
-                this.speed *
+                moveSpeed *
                 delta;
 
         }

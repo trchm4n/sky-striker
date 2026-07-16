@@ -4,7 +4,8 @@ export default class Enemy {
     constructor(
         x,
         y,
-        type = "normal"
+        type = "normal",
+        canvas = null
     ) {
 
 
@@ -14,6 +15,7 @@ export default class Enemy {
 
 
         this.type = type;
+        this.canvas = canvas;
 
 
 
@@ -139,7 +141,7 @@ export default class Enemy {
 
                 if (
                     this.x <= 0 ||
-                    this.x + this.width >= window.innerWidth
+                    this.x + this.width >= (this.canvas?.width || window.innerWidth)
                 ) {
 
                     this.direction *= -1;
@@ -203,7 +205,7 @@ export default class Enemy {
 
         if (
             this.y >
-            window.innerHeight + 100
+            (this.canvas?.height || window.innerHeight) + 100
         ) {
 
             this.alive = false;

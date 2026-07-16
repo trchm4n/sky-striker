@@ -240,15 +240,13 @@ export default class AudioManager {
 
     }
 
-    item() {
+    async item() {
 
         if (!this.enabled) return;
 
         this.initContext();
 
-        if (this.context.state === "suspended") {
-            this.context.resume();
-        }
+        if (this.context.state === "suspended") await this.context.resume();
 
         const oscillator = this.context.createOscillator();
         const gain = this.context.createGain();

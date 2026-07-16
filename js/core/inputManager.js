@@ -21,4 +21,5 @@ export default class InputManager {
     get right() { return this._right || this.stickDirection?.right; } set right(value) { this._right = value; }
     get up() { return this._up || this.stickDirection?.up; } set up(value) { this._up = value; }
     get down() { return this._down || this.stickDirection?.down; } set down(value) { this._down = value; }
+    get stickActive() { return Boolean(this.stickDirection?.left || this.stickDirection?.right || this.stickDirection?.up || this.stickDirection?.down); }
 }
