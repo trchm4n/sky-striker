@@ -240,4 +240,30 @@ export default class AudioManager {
 
     }
 
+    item() {
+
+        if (!this.enabled) return;
+
+        this.initContext();
+
+        if (this.context.state === "suspended") {
+            this.context.resume();
+        }
+
+        const oscillator = this.context.createOscillator();
+        const gain = this.context.createGain();
+
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(660, this.context.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1320, this.context.currentTime + .12);
+        gain.gain.setValueAtTime(.12, this.context.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.001, this.context.currentTime + .18);
+
+        oscillator.connect(gain);
+        gain.connect(this.context.destination);
+        oscillator.start();
+        oscillator.stop(this.context.currentTime + .18);
+
+    }
+
 }

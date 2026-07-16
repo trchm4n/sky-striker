@@ -10,111 +10,37 @@ import Item from "./entities/item.js";
 import Boss from "./entities/boss.js";
 
 class Game {
-    constructor() {
-        this.titleScreen = document.getElementById("titleScreen");
-        this.gameContainer = document.getElementById("gameContainer");
-        this.gameOver = document.getElementById("gameOver");
-        this.stageClear = document.getElementById("stageClear");
-        this.canvas = document.getElementById("gameCanvas");
-        this.ctx = this.canvas.getContext("2d");
-        this.ui = {
-            score: document.getElementById("score"), life: document.getElementById("life"),
-            stage: document.getElementById("stage"), highScore: document.getElementById("highScoreValue"),
-            bossHp: document.getElementById("bossHp"), bossGauge: document.getElementById("bossGauge"),
-            combo: document.getElementById("combo"), comboCount: document.getElementById("comboCount"),
-            pauseOverlay: document.getElementById("pauseOverlay"), clearScore: document.getElementById("clearScore"),
-            finalScore: document.getElementById("finalScore")
-        };
-        this.resizeCanvas();
-        this.input = new InputManager(this.canvas);
-        this.player = new Player(this.canvas, this.input);
-        this.audio = new AudioManager();
-        this.scoreManager = new ScoreManager();
-        this.stars = []; this.createStars();
-        this.running = false; this.paused = false; this.lastTime = 0;
-        this.bindEvents(); this.updateHighScore();
-    }
-
-    bindEvents() {
-        document.getElementById("startButton").addEventListener("click", () => this.start());
-        document.getElementById("retryButton").addEventListener("click", () => this.start());
-        document.getElementById("titleButton").addEventListener("click", () => this.backToTitle());
-        document.getElementById("nextStageButton").addEventListener("click", () => this.nextStage());
-        document.getElementById("clearTitleButton").addEventListener("click", () => this.backToTitle());
-        document.getElementById("pauseButton").addEventListener("click", () => this.togglePause());
-        window.addEventListener("keydown", event => { if (event.key.toLowerCase() === "p" && this.running) this.togglePause(); });
-        window.addEventListener("resize", () => { this.resizeCanvas(); this.createStars(); this.player.resetPosition(); });
-        document.addEventListener("visibilitychange", () => { if (document.hidden && this.running && !this.paused) this.togglePause(); });
-    }
-
-    createStars() {
-        const count = Math.max(75, Math.floor((this.canvas.width * this.canvas.height) / 7500));
-        this.stars = Array.from({ length: count }, () => ({ x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height, size: Math.random() * 1.8 + .4, speed: Math.random() * 100 + 25, alpha: Math.random() * .7 + .25 }));
-    }
-    resetGame() {
-        this.score = 0; this.life = 3; this.stage = 1; this.combo = 0; this.comboTimer = 0;
-        this.enemyInterval = 1.05; this.shootInterval = .19; this.shootTimer = 0; this.enemyTimer = 0; this.enemyShootTimer = 0;
-        this.bullets = []; this.enemies = []; this.enemyBullets = []; this.explosions = []; this.items = [];
-        this.boss = null; this.enemyKillCount = 0; this.bossSpawned = false; this.invincible = false; this.invincibleTimer = 0;
-        this.player.powerLevel = 1; this.player.powerTimer = 0; this.player.shieldTimer = 0; this.player.resetPosition();
-        this.updateHud(); this.hideBossGauge();
-    }
-    start() {
-        this.titleScreen.classList.add("hidden"); this.gameOver.classList.add("hidden"); this.stageClear.classList.add("hidden"); this.gameContainer.classList.remove("hidden");
-        this.resetGame(); this.running = true; this.paused = false; this.lastTime = performance.now(); this.audio.playBGM(); requestAnimationFrame(time => this.loop(time));
-    }
-    loop(time) {
-        if (!this.running) return;
-        const delta = Math.min((time - this.lastTime) / 1000, .05); this.lastTime = time;
-        if (!this.paused) this.update(delta);
-        this.render(time); requestAnimationFrame(t => this.loop(t));
-    }
-    update(delta) {
-        this.updateStars(delta); this.player.update(delta);
-        if (this.invincible && (this.invincibleTimer -= delta) <= 0) this.invincible = false;
-        if (this.comboTimer > 0 && (this.comboTimer -= delta) <= 0) this.combo = 0;
-        this.shootTimer += delta;
-        if (this.shootTimer >= this.shootInterval) { this.shootTimer = 0; this.player.getShootPositions().forEach(pos => this.bullets.push(new Bullet(pos.x, pos.y))); this.audio.shoot(); }
-        if (!this.bossSpawned && (this.enemyTimer += delta) >= this.enemyInterval) {
-            this.enemyTimer = 0; const x = 18 + Math.random() * (this.canvas.width - 76); this.enemies.push(new Enemy(x, -50, this.getEnemyType()));
-        }
-        if ((this.enemyShootTimer += delta) >= Math.max(.55, 1 - this.stage * .04)) {
-            this.enemyShootTimer = 0; this.enemies.forEach(enemy => this.enemyBullets.push(new EnemyBullet(enemy.x + enemy.width / 2, enemy.y + enemy.height, this.player)));
-        }
-        if (this.boss?.alive) { const attacks = this.boss.update(delta, this.player); this.updateBossGauge(); attacks.forEach(attack => this.enemyBullets.push(new EnemyBullet(attack.x, attack.y, this.player, attack.speed, attack.angle))); }
-        [...this.bullets, ...this.enemies, ...this.enemyBullets, ...this.items, ...this.explosions].forEach(object => object.update(delta));
-        this.handleCollisions(); this.cleanup(); this.updateHud();
-    }
-    updateStars(delta) { this.stars.forEach(star => { star.y += star.speed * delta; if (star.y > this.canvas.height + 2) { star.y = -2; star.x = Math.random() * this.canvas.width; } }); }
-    handleCollisions() {
-        for (const enemy of this.enemies) for (const bullet of this.bullets) if (enemy.alive && bullet.alive && this.isHit(enemy, bullet)) { enemy.alive = false; bullet.alive = false; this.destroyEnemy(enemy); break; }
-        if (this.boss?.alive) this.bullets.forEach(bullet => { if (bullet.alive && this.isHit(this.boss, bullet)) { bullet.alive = false; this.boss.hit(50); } });
-        if (this.boss && !this.boss.alive) { this.score += 5000; this.explosions.push(new Explosion(this.boss.x + this.boss.width / 2, this.boss.y + this.boss.height / 2, 2)); this.audio.explosion(); this.boss = null; this.hideBossGauge(); this.stageClearTrigger(); return; }
-        this.items.forEach(item => { if (item.alive && this.isHit(this.player, item)) this.collectItem(item); });
-        if (!this.invincible && ([...this.enemies, ...this.enemyBullets].some(object => this.isHit(this.player, object)))) this.takeDamage();
-    }
-    destroyEnemy(enemy) {
-        this.score += 100 + Math.min(this.combo, 20) * 10; this.combo++; this.comboTimer = 2.2; this.enemyKillCount++;
-        this.explosions.push(new Explosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2)); this.audio.explosion();
-        if (Math.random() < .13) this.items.push(new Item(enemy.x + 4, enemy.y, this.getItemType()));
-        if (this.enemyKillCount >= 24 + this.stage * 4 && !this.bossSpawned) { this.boss = new Boss(this.canvas, this.stage); this.bossSpawned = true; this.showBossGauge(); }
-    }
-    collectItem(item) { item.alive = false; if (item.type === "heal") this.life = Math.min(3, this.life + 1); if (item.type === "power") this.player.powerUp(); if (item.type === "shield") { this.invincible = true; this.invincibleTimer = 8; this.player.activateShield(); } }
-    takeDamage() { this.life--; this.combo = 0; this.audio.hit(); this.invincible = true; this.invincibleTimer = 2.5; this.explosions.push(new Explosion(this.player.x + this.player.width / 2, this.player.y + this.player.height / 2)); if (this.life <= 0) this.gameOverTrigger(); }
-    cleanup() { this.bullets = this.bullets.filter(x => x.alive); this.enemies = this.enemies.filter(x => x.alive); this.enemyBullets = this.enemyBullets.filter(x => x.alive); this.items = this.items.filter(x => x.alive); this.explosions = this.explosions.filter(x => x.alive); }
-    render(time) { const ctx = this.ctx; ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); const glow = ctx.createLinearGradient(0, 0, 0, this.canvas.height); glow.addColorStop(0, "#071a42"); glow.addColorStop(.48, "#030a1c"); glow.addColorStop(1, "#01030b"); ctx.fillStyle = glow; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); this.stars.forEach(star => { ctx.fillStyle = `rgba(195,232,255,${star.alpha})`; ctx.fillRect(star.x, star.y, star.size, star.size); }); if (!this.invincible || Math.floor(time / 100) % 2 === 0) this.player.draw(ctx); this.bullets.forEach(x => x.draw(ctx)); this.enemies.forEach(x => x.draw(ctx)); this.enemyBullets.forEach(x => x.draw(ctx)); this.items.forEach(x => x.draw(ctx)); if (this.boss?.alive) this.boss.draw(ctx); this.explosions.forEach(x => x.draw(ctx)); }
-    getEnemyType() { const r = Math.random(); if (r < .42) return "normal"; if (r < .68) return "side"; if (r < .88) return "zigzag"; return "rush"; }
-    getItemType() { const r = Math.random(); return r < .32 ? "heal" : r < .74 ? "power" : "shield"; }
-    isHit(a, b) { const pad = 5; return !(a.x + a.width - pad < b.x + pad || a.x + pad > b.x + b.width - pad || a.y + a.height - pad < b.y + pad || a.y + pad > b.y + b.height - pad); }
-    updateHud() { this.ui.score.textContent = this.score.toLocaleString(); this.ui.life.textContent = "◆".repeat(this.life) || "—"; this.ui.stage.textContent = this.stage; this.ui.comboCount.textContent = this.combo; this.ui.combo.classList.toggle("hidden", this.combo < 2); }
-    updateHighScore() { this.ui.highScore.textContent = this.scoreManager.getHighScore().toLocaleString(); }
-    showBossGauge() { this.ui.bossHp.classList.remove("hidden"); this.updateBossGauge(); } hideBossGauge() { this.ui.bossHp.classList.add("hidden"); }
-    updateBossGauge() { if (this.boss) this.ui.bossGauge.style.width = `${this.boss.getHpRate() * 100}%`; }
-    togglePause() { this.paused = !this.paused; this.ui.pauseOverlay.classList.toggle("hidden", !this.paused); if (!this.paused) this.lastTime = performance.now(); }
-    stageClearTrigger() { this.running = false; this.audio.stopBGM(); this.scoreManager.saveScore(this.score); this.ui.clearScore.textContent = this.score.toLocaleString(); this.gameContainer.classList.add("hidden"); this.stageClear.classList.remove("hidden"); this.updateHighScore(); }
-    nextStage() { this.stage++; this.enemyInterval = Math.max(.42, 1.05 - (this.stage - 1) * .09); this.shootTimer = this.enemyTimer = this.enemyShootTimer = 0; this.bullets = []; this.enemies = []; this.enemyBullets = []; this.explosions = []; this.items = []; this.boss = null; this.enemyKillCount = 0; this.bossSpawned = false; this.player.resetPosition(); this.stageClear.classList.add("hidden"); this.gameContainer.classList.remove("hidden"); this.updateHud(); this.running = true; this.paused = false; this.lastTime = performance.now(); this.audio.playBGM(); requestAnimationFrame(time => this.loop(time)); }
-    gameOverTrigger() { this.running = false; this.audio.stopBGM(); this.scoreManager.saveScore(this.score); this.ui.finalScore.textContent = this.score.toLocaleString(); this.gameContainer.classList.add("hidden"); this.gameOver.classList.remove("hidden"); this.updateHighScore(); }
-    backToTitle() { this.running = false; this.paused = false; this.audio.stopBGM(); this.gameContainer.classList.add("hidden"); this.gameOver.classList.add("hidden"); this.stageClear.classList.add("hidden"); this.titleScreen.classList.remove("hidden"); this.hideBossGauge(); this.updateHighScore(); }
-    resizeCanvas() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
+  constructor() {
+    this.titleScreen = document.getElementById("titleScreen"); this.gameContainer = document.getElementById("gameContainer"); this.gameOver = document.getElementById("gameOver"); this.stageClear = document.getElementById("stageClear");
+    this.canvas = document.getElementById("gameCanvas"); this.ctx = this.canvas.getContext("2d");
+    this.ui = { score: document.getElementById("score"), life: document.getElementById("life"), stage: document.getElementById("stage"), highScore: document.getElementById("highScoreValue"), bossHp: document.getElementById("bossHp"), bossGauge: document.getElementById("bossGauge"), combo: document.getElementById("combo"), comboCount: document.getElementById("comboCount"), pauseOverlay: document.getElementById("pauseOverlay"), warningOverlay: document.getElementById("warningOverlay"), clearScore: document.getElementById("clearScore"), finalScore: document.getElementById("finalScore") };
+    this.resizeCanvas(); this.input = new InputManager(this.canvas, [document.getElementById("leftStick"), document.getElementById("rightStick")]); this.player = new Player(this.canvas, this.input); this.audio = new AudioManager(); this.scoreManager = new ScoreManager(); this.createStars(); this.running = false; this.paused = false; this.lastTime = 0; this.bindEvents(); this.updateHighScore();
+  }
+  bindEvents() { document.getElementById("startButton").addEventListener("click", () => this.start()); document.getElementById("retryButton").addEventListener("click", () => this.start()); document.getElementById("titleButton").addEventListener("click", () => this.backToTitle()); document.getElementById("nextStageButton").addEventListener("click", () => this.nextStage()); document.getElementById("clearTitleButton").addEventListener("click", () => this.backToTitle()); document.getElementById("pauseButton").addEventListener("click", () => this.togglePause()); window.addEventListener("keydown", event => { if (event.key.toLowerCase() === "p" && this.running) this.togglePause(); }); window.addEventListener("resize", () => { this.resizeCanvas(); this.createStars(); this.player.resetPosition(); }); document.addEventListener("visibilitychange", () => { if (document.hidden && this.running && !this.paused) this.togglePause(); }); }
+  createStars() { const count = Math.max(75, Math.floor(this.canvas.width * this.canvas.height / 7500)); this.stars = Array.from({ length: count }, () => ({ x: Math.random() * this.canvas.width, y: Math.random() * this.canvas.height, size: Math.random() * 1.8 + .4, speed: Math.random() * 100 + 25, alpha: Math.random() * .7 + .25 })); }
+  resetGame() { this.score = 0; this.life = 3; this.stage = 1; this.combo = 0; this.comboTimer = 0; this.enemyInterval = 1.05; this.shootInterval = .19; this.shootTimer = 0; this.enemyTimer = 0; this.enemyShootTimer = 0; this.bullets = []; this.enemies = []; this.enemyBullets = []; this.explosions = []; this.items = []; this.boss = null; this.enemyKillCount = 0; this.bossSpawned = false; this.warningTimer = 0; this.invincible = false; this.invincibleTimer = 0; this.player.powerLevel = 1; this.player.powerTimer = 0; this.player.shieldTimer = 0; this.player.resetPosition(); this.updateHud(); this.hideBossGauge(); this.ui.warningOverlay.classList.add("hidden"); }
+  start() { this.titleScreen.classList.add("hidden"); this.gameOver.classList.add("hidden"); this.stageClear.classList.add("hidden"); this.gameContainer.classList.remove("hidden"); this.resetGame(); this.running = true; this.paused = false; this.lastTime = performance.now(); this.audio.playBGM(); requestAnimationFrame(time => this.loop(time)); }
+  loop(time) { if (!this.running) return; const delta = Math.min((time - this.lastTime) / 1000, .05); this.lastTime = time; if (!this.paused) this.update(delta); this.render(time); requestAnimationFrame(t => this.loop(t)); }
+  update(delta) { this.updateStars(delta); if (this.warningTimer > 0) { this.warningTimer -= delta; if (this.warningTimer <= 0) this.ui.warningOverlay.classList.add("hidden"); return; } this.player.update(delta); if (this.invincible && (this.invincibleTimer -= delta) <= 0) this.invincible = false; if (this.comboTimer > 0 && (this.comboTimer -= delta) <= 0) this.combo = 0; this.shootTimer += delta; if (this.shootTimer >= this.shootInterval) { this.shootTimer = 0; this.player.getShootPositions().forEach(pos => this.bullets.push(new Bullet(pos.x, pos.y))); this.audio.shoot(); } if (!this.bossSpawned && (this.enemyTimer += delta) >= this.enemyInterval) { this.enemyTimer = 0; this.enemies.push(new Enemy(18 + Math.random() * (this.canvas.width - 76), -50, this.getEnemyType())); } if ((this.enemyShootTimer += delta) >= Math.max(.55, 1 - this.stage * .04)) { this.enemyShootTimer = 0; this.enemies.forEach(enemy => this.enemyBullets.push(new EnemyBullet(enemy.x + enemy.width / 2, enemy.y + enemy.height, this.player))); } if (this.boss?.alive) { const attacks = this.boss.update(delta, this.player); this.updateBossGauge(); attacks.forEach(attack => this.enemyBullets.push(new EnemyBullet(attack.x, attack.y, this.player, attack.speed, attack.angle))); } [...this.bullets, ...this.enemies, ...this.enemyBullets, ...this.items, ...this.explosions].forEach(object => object.update(delta)); this.handleCollisions(); this.cleanup(); this.updateHud(); }
+  updateStars(delta) { this.stars.forEach(star => { star.y += star.speed * delta; if (star.y > this.canvas.height + 2) { star.y = -2; star.x = Math.random() * this.canvas.width; } }); }
+  handleCollisions() { for (const enemy of this.enemies) for (const bullet of this.bullets) if (enemy.alive && bullet.alive && this.isHit(enemy, bullet)) { enemy.alive = false; bullet.alive = false; this.destroyEnemy(enemy); break; } if (this.boss?.alive) this.bullets.forEach(bullet => { if (bullet.alive && this.isHit(this.boss, bullet)) { bullet.alive = false; this.boss.hit(50); } }); if (this.boss && !this.boss.alive) { this.score += 5000; this.explosions.push(new Explosion(this.boss.x + this.boss.width / 2, this.boss.y + this.boss.height / 2, 2)); this.audio.explosion(); this.boss = null; this.hideBossGauge(); this.stageClearTrigger(); return; } this.items.forEach(item => { if (item.alive && this.isHit(this.player, item)) this.collectItem(item); }); if (!this.invincible && [...this.enemies, ...this.enemyBullets].some(object => this.isHit(this.player, object))) this.takeDamage(); }
+  destroyEnemy(enemy) { this.score += 100 + Math.min(this.combo, 20) * 10; this.combo++; this.comboTimer = 2.2; this.enemyKillCount++; this.explosions.push(new Explosion(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2)); this.audio.explosion(); if (Math.random() < .13) this.items.push(new Item(enemy.x + 4, enemy.y, this.getItemType())); if (this.enemyKillCount >= 24 + this.stage * 4 && !this.bossSpawned) { this.boss = new Boss(this.canvas, this.stage); this.bossSpawned = true; this.warningTimer = 2.4; this.ui.warningOverlay.classList.remove("hidden"); this.showBossGauge(); } }
+  collectItem(item) { item.alive = false; this.audio.item(); if (item.type === "heal") this.life = Math.min(3, this.life + 1); if (item.type === "power") this.player.powerUp(); if (item.type === "shield") { this.invincible = true; this.invincibleTimer = 8; this.player.activateShield(); } }
+  takeDamage() { this.life--; this.combo = 0; this.audio.hit(); this.invincible = true; this.invincibleTimer = 2.5; this.explosions.push(new Explosion(this.player.x + this.player.width / 2, this.player.y + this.player.height / 2)); if (this.life <= 0) this.gameOverTrigger(); }
+  cleanup() { this.bullets = this.bullets.filter(x => x.alive); this.enemies = this.enemies.filter(x => x.alive); this.enemyBullets = this.enemyBullets.filter(x => x.alive); this.items = this.items.filter(x => x.alive); this.explosions = this.explosions.filter(x => x.alive); }
+  render(time) { const ctx = this.ctx; const glow = ctx.createLinearGradient(0, 0, 0, this.canvas.height); glow.addColorStop(0, "#071a42"); glow.addColorStop(.48, "#030a1c"); glow.addColorStop(1, "#01030b"); ctx.fillStyle = glow; ctx.fillRect(0, 0, this.canvas.width, this.canvas.height); this.stars.forEach(star => { ctx.fillStyle = `rgba(195,232,255,${star.alpha})`; ctx.fillRect(star.x, star.y, star.size, star.size); }); if (!this.invincible || Math.floor(time / 100) % 2 === 0) this.player.draw(ctx); this.bullets.forEach(x => x.draw(ctx)); this.enemies.forEach(x => x.draw(ctx)); this.enemyBullets.forEach(x => x.draw(ctx)); this.items.forEach(x => x.draw(ctx)); if (this.boss?.alive) this.boss.draw(ctx); this.explosions.forEach(x => x.draw(ctx)); }
+  getEnemyType() { const r = Math.random(); return r < .42 ? "normal" : r < .68 ? "side" : r < .88 ? "zigzag" : "rush"; }
+  getItemType() { const r = Math.random(); return r < .32 ? "heal" : r < .74 ? "power" : "shield"; }
+  isHit(a, b) { const pad = 5; return !(a.x + a.width - pad < b.x + pad || a.x + pad > b.x + b.width - pad || a.y + a.height - pad < b.y + pad || a.y + pad > b.y + b.height - pad); }
+  updateHud() { this.ui.score.textContent = this.score.toLocaleString(); this.ui.life.textContent = "L".repeat(this.life) || "-"; this.ui.stage.textContent = this.stage; this.ui.comboCount.textContent = this.combo; this.ui.combo.classList.toggle("hidden", this.combo < 2); }
+  updateHighScore() { this.ui.highScore.textContent = this.scoreManager.getHighScore().toLocaleString(); }
+  showBossGauge() { this.ui.bossHp.classList.remove("hidden"); this.updateBossGauge(); } hideBossGauge() { this.ui.bossHp.classList.add("hidden"); }
+  updateBossGauge() { if (this.boss) this.ui.bossGauge.style.width = `${this.boss.getHpRate() * 100}%`; }
+  togglePause() { this.paused = !this.paused; this.ui.pauseOverlay.classList.toggle("hidden", !this.paused); if (!this.paused) this.lastTime = performance.now(); }
+  stageClearTrigger() { this.running = false; this.audio.stopBGM(); this.scoreManager.saveScore(this.score); this.ui.clearScore.textContent = this.score.toLocaleString(); this.gameContainer.classList.add("hidden"); this.stageClear.classList.remove("hidden"); this.updateHighScore(); }
+  nextStage() { this.stage++; this.enemyInterval = Math.max(.42, 1.05 - (this.stage - 1) * .09); this.shootTimer = this.enemyTimer = this.enemyShootTimer = 0; this.bullets = []; this.enemies = []; this.enemyBullets = []; this.explosions = []; this.items = []; this.boss = null; this.enemyKillCount = 0; this.bossSpawned = false; this.warningTimer = 0; this.ui.warningOverlay.classList.add("hidden"); this.player.resetPosition(); this.stageClear.classList.add("hidden"); this.gameContainer.classList.remove("hidden"); this.updateHud(); this.running = true; this.paused = false; this.lastTime = performance.now(); this.audio.playBGM(); requestAnimationFrame(time => this.loop(time)); }
+  gameOverTrigger() { this.running = false; this.audio.stopBGM(); this.scoreManager.saveScore(this.score); this.ui.finalScore.textContent = this.score.toLocaleString(); this.gameContainer.classList.add("hidden"); this.gameOver.classList.remove("hidden"); this.updateHighScore(); }
+  backToTitle() { this.running = false; this.paused = false; this.warningTimer = 0; this.ui.warningOverlay.classList.add("hidden"); this.audio.stopBGM(); this.gameContainer.classList.add("hidden"); this.gameOver.classList.add("hidden"); this.stageClear.classList.add("hidden"); this.titleScreen.classList.remove("hidden"); this.hideBossGauge(); this.updateHighScore(); }
+  resizeCanvas() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
 }
 window.addEventListener("load", () => new Game());

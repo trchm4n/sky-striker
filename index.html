@@ -8,7 +8,7 @@
 </head>
 <body>
   <main id="titleScreen" class="screen">
-    <p class="eyebrow">NEON DEFENSE FORCE // 2089</p>
+    <p class="eyebrow">NEON DEFENSE FORCE // 2089 // VER. 1.1</p>
     <h1>SKY <span>STRIKER</span></h1>
     <p class="subtitle">空を切り裂け。最後の防衛ラインを死守せよ。</p>
     <button id="startButton" class="primaryButton">GAME START <small>▶</small></button>
@@ -33,6 +33,9 @@
     </div>
     <div id="combo" class="hidden"><span id="comboCount">0</span> COMBO</div>
     <button id="pauseButton" class="iconButton" aria-label="ポーズ">Ⅱ</button>
+    <div id="warningOverlay" class="hidden" aria-live="assertive"><span>⚠</span> WARNING <span>⚠</span><small>HOSTILE DREADNOUGHT APPROACHING</small></div>
+    <div id="leftStick" class="virtualStick" aria-label="移動スティック"><div class="stickKnob"></div></div>
+    <div id="rightStick" class="virtualStick accent" aria-label="移動スティック"><div class="stickKnob"></div></div>
     <div id="bossHp" class="hidden">
       <div id="bossTitle">DREADNOUGHT // HP</div>
       <div id="bossGaugeOuter"><div id="bossGauge"></div></div>
@@ -41,7 +44,7 @@
   </div>
 
   <section id="stageClear" class="screen hidden">
-    <p class="eyebrow">SECTOR SECURED</p>
+    <p class="eyebrow">SECTOR SECURED // VER. 1.1</p>
     <h1>STAGE CLEAR</h1>
     <p class="finalScore">SCORE <strong id="clearScore">0</strong></p>
     <button id="nextStageButton" class="primaryButton green">NEXT STAGE <small>▶</small></button>
