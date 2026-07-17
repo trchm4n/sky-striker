@@ -1,5 +1,5 @@
 export default class Item {
-    constructor(x, y, type) { this.x = x; this.y = y; this.type = type; this.width = 32; this.height = 32; this.speed = 110; this.alive = true; this.angle = 0; this.lifeTime = 9; }
-    update(delta) { this.y += this.speed * delta; this.angle += delta * 3; this.lifeTime -= delta; if (this.lifeTime <= 0 || this.y > window.innerHeight + 50) this.alive = false; }
+    constructor(x, y, type, canvas = null) { this.x = x; this.y = y; this.type = type; this.canvas = canvas; this.width = 32; this.height = 32; this.speed = 110; this.alive = true; this.angle = 0; this.lifeTime = 9; }
+    update(delta) { this.y += this.speed * delta; this.angle += delta * 3; this.lifeTime -= delta; if (this.lifeTime <= 0 || this.y > (this.canvas?.height || window.innerHeight) + 50) this.alive = false; }
     draw(ctx) { const palette = { heal: ["#ff5478", "+"], power: ["#ffc64b", "P"], shield: ["#4de7ff", "S"], spread: ["#bd80ff", "3"], missile: ["#ff904d", "M"] }; const [color, mark] = palette[this.type] || ["#fff", "?"]; ctx.save(); ctx.translate(this.x + 16, this.y + 16); ctx.rotate(this.angle); ctx.shadowBlur = 15; ctx.shadowColor = color; ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, -15); ctx.lineTo(14, 0); ctx.lineTo(0, 15); ctx.lineTo(-14, 0); ctx.closePath(); ctx.fill(); ctx.rotate(-this.angle); ctx.fillStyle = "#07101f"; ctx.font = "bold 15px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(mark, 0, 1); ctx.restore(); }
 }
