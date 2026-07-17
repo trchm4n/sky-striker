@@ -8,7 +8,7 @@
 </head>
 <body>
   <main id="titleScreen" class="screen">
-    <p class="eyebrow">NEON DEFENSE FORCE // 2089 // VER. 1.5</p>
+    <p class="eyebrow">NEON DEFENSE FORCE // 2089 // VER. 1.6</p>
     <h1>SKY <span>STRIKER</span></h1>
     <p class="subtitle">空を切り裂け。最後の防衛ラインを死守せよ。</p>
     <button id="startButton" class="primaryButton">GAME START <small>▶</small></button>
@@ -22,6 +22,7 @@
       <p class="autoFire">ショットはオート連射。アイテムで機体を強化できます。</p>
     </section>
     <p class="highscore">HIGH SCORE <strong id="highScoreValue">0</strong></p>
+    <button id="rankingButton" class="textButton">RANKING / TOP 10</button>
   </main>
 
   <div id="gameContainer" class="hidden">
@@ -32,6 +33,7 @@
       <div class="hudItem"><span class="hudLabel">STAGE</span><strong id="stage">1</strong></div>
     </div>
     <div id="combo" class="hidden"><span id="comboCount">0</span> COMBO</div>
+    <div id="stageBanner" class="hidden"><strong id="stageBannerNumber"></strong><span id="stageBannerName"></span></div>
     <div id="statusEffects" class="hidden"><span id="itemTimer"></span><span id="powerTimer"></span><span id="shieldTimer"></span></div>
     <button id="pauseButton" class="iconButton" aria-label="ポーズ">Ⅱ</button>
     <div id="warningOverlay" class="hidden" aria-live="assertive"><span>⚠</span> WARNING <span>⚠</span><small>HOSTILE DREADNOUGHT APPROACHING</small></div>
@@ -45,13 +47,14 @@
   </div>
 
   <section id="stageClear" class="screen hidden">
-    <p class="eyebrow">SECTOR SECURED // VER. 1.5</p>
+    <p class="eyebrow">SECTOR SECURED // VER. 1.6</p>
     <h1 id="stageClearTitle">STAGE CLEAR</h1>
     <p class="finalScore">SCORE <strong id="clearScore">0</strong></p>
     <div id="clearResults" class="resultStats"></div>
     <button id="nextStageButton" class="primaryButton green">NEXT STAGE <small>▶</small></button>
     <button id="clearTitleButton" class="textButton">TITLE SCREEN</button>
   </section>
+  <section id="rankingScreen" class="screen hidden"><p class="eyebrow">PILOT RECORDS</p><h1>RANKING</h1><div id="rankingList" class="rankingList"></div><button id="rankingBackButton" class="textButton">BACK</button></section>
 
   <section id="gameOver" class="screen hidden">
     <p class="eyebrow danger">MISSION FAILED</p>

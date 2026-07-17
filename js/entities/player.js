@@ -1,15 +1,15 @@
 export default class Player {
-    constructor(canvas, input) { this.canvas = canvas; this.input = input; this.width = 56; this.height = 68; this.speed = 350; this.powerLevel = 1; this.powerTimer = 0; this.shieldTimer = 0; this.resetPosition(); }
+    constructor(canvas, input) { this.canvas = canvas; this.input = input; this.width = 56; this.height = 68; this.speed = 350; this.powerLevel = 1; this.powerTimer = 0; this.weaponMode = null; this.weaponTimer = 0; this.shieldTimer = 0; this.resetPosition(); }
     update(delta) {
         const magnitude = Math.hypot(this.input.stickVector.x, this.input.stickVector.y);
         const moveSpeed = this.input.stickActive ? 105 + magnitude * 245 : this.speed;
         this.x += (this.input.right ? 1 : 0) * moveSpeed * delta; this.x -= (this.input.left ? 1 : 0) * moveSpeed * delta; this.y += (this.input.down ? 1 : 0) * moveSpeed * delta; this.y -= (this.input.up ? 1 : 0) * moveSpeed * delta;
         if (this.input.touchActive && !this.input.stickActive) { const x = this.input.touchX - this.width / 2; const y = this.input.touchY - this.height / 2; this.x += (x - this.x) * 8 * delta; this.y += (y - this.y) * 8 * delta; }
         this.x = Math.max(0, Math.min(this.canvas.width - this.width, this.x)); this.y = Math.max(0, Math.min(this.canvas.height - this.height, this.y));
-        if (this.powerTimer > 0 && (this.powerTimer -= delta) <= 0) this.powerLevel = 1; if (this.shieldTimer > 0) this.shieldTimer -= delta;
+        if (this.powerTimer > 0 && (this.powerTimer -= delta) <= 0) this.powerLevel = 1; if (this.weaponTimer > 0 && (this.weaponTimer -= delta) <= 0) this.weaponMode = null; if (this.shieldTimer > 0) this.shieldTimer -= delta;
     }
-    powerUp() { this.powerLevel = 2; this.powerTimer = 10; } activateShield() { this.shieldTimer = 10; } isShieldActive() { return this.shieldTimer > 0; }
-    getShootPositions() { const x = this.x + this.width / 2; const y = this.y + 5; return this.powerLevel === 2 ? [{ x, y }, { x: x - 19, y: y + 12 }, { x: x + 19, y: y + 12 }] : [{ x, y }]; }
+    powerUp() { this.powerLevel = 2; this.powerTimer = 10; } setWeapon(mode) { this.weaponMode = mode; this.weaponTimer = 10; } activateShield() { this.shieldTimer = 10; } isShieldActive() { return this.shieldTimer > 0; }
+    getShootPositions() { const x = this.x + this.width / 2; const y = this.y + 5; if (this.weaponMode === "spread") return [{ x, y, angle: -.28 }, { x, y, angle: 0 }, { x, y, angle: .28 }]; if (this.weaponMode === "missile") return [{ x: x - 12, y: y + 12, type: "missile" }, { x: x + 12, y: y + 12, type: "missile" }]; return this.powerLevel === 2 ? [{ x, y }, { x: x - 19, y: y + 12 }, { x: x + 19, y: y + 12 }] : [{ x, y }]; }
     draw(ctx) {
         const cx = this.width / 2; ctx.save(); ctx.translate(this.x, this.y);
         if (this.isShieldActive()) { ctx.beginPath(); ctx.arc(cx, 35, 44, 0, Math.PI * 2); ctx.strokeStyle = "rgba(91,245,255,.88)"; ctx.lineWidth = 2; ctx.shadowBlur = 17; ctx.shadowColor = "#38ddff"; ctx.stroke(); }
